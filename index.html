@@ -176,8 +176,8 @@ footer a { color: var(--accent); }
   <header>
     <div class="top">
       <h1 data-i18n="h1">Citace knih</h1>
-      <div class="lang" role="group" aria-label="Jazyk citace / Citation language">
-        <button type="button" data-lang="cs" aria-pressed="true">CZ</button><button type="button" data-lang="en" aria-pressed="false">EN</button>
+      <div class="lang" role="group" aria-label="Jazyk citace / Jazyk citácie / Citation language">
+        <button type="button" data-lang="cs" aria-pressed="true">CZ</button><button type="button" data-lang="sk" aria-pressed="false">SK</button><button type="button" data-lang="en" aria-pressed="false">EN</button>
       </div>
     </div>
     <p class="intro" data-i18n="intro">Napiš ISBN, název nebo autora, klidně nepřesně. Knihu vyhledám v českých knihovnách (Knihovny.cz), v Open Library a v Google Books, porovnám údaje mezi zdroji a sestavím citaci podle ČSN ISO 690:2022.</p>
@@ -311,7 +311,7 @@ footer a { color: var(--accent); }
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* bez úložiště */ } },
   };
 
-  /* ---------- Jazyk: CZ = ČSN ISO 690:2022, EN = ISO 690 v angličtině ---------- */
+  /* ---------- Jazyk: CZ = ČSN ISO 690:2022, SK = STN ISO 690:2022, EN = ISO 690 v angličtině ---------- */
 
   const I18N = {
     cs: {
@@ -348,6 +348,41 @@ footer a { color: var(--accent); }
       fAuthors: 'Autoři', fTitle: 'Název', fEdition: 'Vydání', fPlace: 'Místo', fPublisher: 'Nakladatel', fYear: 'Rok', fIsbn: 'ISBN',
       copied: 'Zkopírováno', copiedPlain: 'Zkopírováno (bez formátu)', added: 'Přidáno do seznamu',
       confirmClear: 'Opravdu vymazat celý seznam?', del: 'Smazat',
+    },
+    sk: {
+      pageTitle: 'Citácie kníh',
+      h1: 'Citácie kníh',
+      intro: 'Napíš ISBN, názov alebo autora, pokojne nepresne. Knihu vyhľadám v českých knižniciach (Knihovny.cz, majú aj veľa slovenských kníh), v Open Library a v Google Books, porovnám údaje medzi zdrojmi a zostavím citáciu podľa STN ISO 690:2022.',
+      qPh: 'napr. ISBN alebo „hviezdoslav hajnikova zena“', qAria: 'Hľadať knihu',
+      search: 'Hľadať', manual: 'Vyplniť ručne', results: 'Nájdené knihy',
+      formH: 'Údaje o knihe', formNote: 'Všetko sa dá upraviť, citácia sa mení hneď.',
+      creators: 'Tvorcovia', roleAut: 'autori', roleEdt: 'editori (ed.)', addCreator: '+ pridať tvorcu',
+      corporate: 'Korporácia ako autor (len keď chýbajú osoby)', title: 'Názov', subtitle: 'Podnázov',
+      edition: 'Vydanie (1. sa neuvádza)', editionPh: 'napr. 2. vyd.', series: 'Edícia (nepovinné)',
+      place: 'Miesto vydania', placeHint: 'Odhadnuté podľa vydavateľa – over.', publisher: 'Vydavateľ', year: 'Rok vydania',
+      translator: 'Prekladateľ (nepovinné)', addTranslator: '+ pridať prekladateľa', online: 'Elektronická kniha online',
+      url: 'Dostupné na (URL)', cited: 'Dátum citovania',
+      citeH: 'Citácia', copy: 'Kopírovať', copyPlain: 'Kopírovať bez formátu', addList: 'Pridať do zoznamu',
+      verifyH: 'Overenie v ďalších zdrojoch',
+      verifyLegend: '✓ zdroj súhlasí s formulárom, ≠ zdroj uvádza niečo iné (tlačidlom „použiť“ hodnotu prevezmeš), prázdne = zdroj údaj nemá. Knižničný katalóg (Knihovny.cz) býva najspoľahlivejší.',
+      biblioH: 'Môj zoznam literatúry', copyAll: 'Kopírovať celý zoznam', clear: 'Vymazať',
+      settings: 'Nastavenia', gkey: 'Kľúč Google Books API (nepovinné)',
+      gkeyNote: 'Bez kľúča funguje Google Books s denným limitom dopytov. Kľúč si môžeš zadarmo vytvoriť v Google Cloud Console a uložiť ho sem. Zostane len v tomto prehliadači.',
+      footer: 'Formát: STN ISO 690:2022 (kniha). Údaje: {sources}. Všetko beží v prehliadači, zoznam sa ukladá len v tomto zariadení.',
+      unavailable: 'nedostupné', searching: 'Hľadám…',
+      nothing: 'Nič som nenašiel. Skús iné slová alebo ISBN, prípadne vyplň údaje ručne.',
+      count: (n) => n + (n === 1 ? ' kniha' : n < 5 ? ' knihy' : ' kníh'),
+      inSources: (n) => `zhoda v ${n} zdrojoch`, approx: 'vydanie neisté', pick: 'Vybrať',
+      family: 'Priezvisko', given: 'Meno', remove: 'Odobrať', fillIn: 'Vyplň údaje o knihe.',
+      noIsbn: 'Kniha nemá ISBN, v ďalších zdrojoch ju nemožno spoľahlivo dohľadať',
+      thField: 'Údaj', thForm: 'Vo formulári', lookup: 'hľadám…', notFound: 'nenájdené', use: 'použiť',
+      byIsbn: (i) => 'podľa ISBN ' + i,
+      foundIn: (a, b) => `Kniha nájdená v ${a} z ${b} zdrojov`,
+      diffs: (n) => `Rozdielov medzi zdrojmi: ${n}, skontroluj zvýraznené polia`,
+      match: 'Údaje sa zhodujú', verifying: 'Overujem…',
+      fAuthors: 'Autori', fTitle: 'Názov', fEdition: 'Vydanie', fPlace: 'Miesto', fPublisher: 'Vydavateľ', fYear: 'Rok', fIsbn: 'ISBN',
+      copied: 'Skopírované', copiedPlain: 'Skopírované (bez formátu)', added: 'Pridané do zoznamu',
+      confirmClear: 'Naozaj vymazať celý zoznam?', del: 'Zmazať',
     },
     en: {
       pageTitle: 'Book References',
@@ -391,8 +426,9 @@ footer a { color: var(--accent); }
 
   function initialLang() {
     const q = new URLSearchParams(location.search).get('lang');
-    if (q === 'en' || q === 'cs') return q;
-    return store.get('citace.lang', 'cs') === 'en' ? 'en' : 'cs';
+    if (I18N[q]) return q;
+    const saved = store.get('citace.lang', 'cs');
+    return I18N[saved] ? saved : 'cs';
   }
   let lang = initialLang();
   const t = (k, ...a) => { const v = I18N[lang][k]; return typeof v === 'function' ? v(...a) : v; };
@@ -421,7 +457,7 @@ footer a { color: var(--accent); }
   }
 
   async function searchKnihovny(q, signal) {
-    const p = new URLSearchParams({ lookfor: q, type: 'AllFields', limit: '20', lng: lang });
+    const p = new URLSearchParams({ lookfor: q, type: 'AllFields', limit: '20', lng: lang === 'en' ? 'en' : 'cs' });
     FIELDS_KNIHOVNY.forEach((f) => p.append('field[]', f));
     const j = await getJson('https://www.knihovny.cz/api/v1/search?' + p, signal);
     return (j.records || []).map(C.fromKnihovny);
@@ -677,7 +713,7 @@ footer a { color: var(--accent); }
       return;
     }
     const form = readForm();
-    const formVals = { authors: form.authors, title: form.title, edition: form.edition, place: form.place, publisher: form.publisher, year: form.year, isbn: [form.isbn] };
+    const formVals = { authors: form.authors, title: form.title, edition: C.normalizeEdition(form.edition, lang), place: form.place, publisher: form.publisher, year: form.year, isbn: [form.isbn] };
     const srcs = PRIORITY;
     let found = 0;
     let diffs = 0;
@@ -767,7 +803,7 @@ footer a { color: var(--accent); }
   }
 
   // každý jazyk má vlastní seznam
-  const biblioKey = () => (lang === 'en' ? 'citace.seznam.en' : 'citace.seznam');
+  const biblioKey = () => (lang === 'cs' ? 'citace.seznam' : 'citace.seznam.' + lang);
   let biblio = store.get(biblioKey(), []);
 
   function renderBiblio() {
@@ -839,7 +875,7 @@ footer a { color: var(--accent); }
     lang = next;
     store.set('citace.lang', lang);
     const url = new URL(location.href);
-    if (lang === 'en') url.searchParams.set('lang', 'en'); else url.searchParams.delete('lang');
+    if (lang !== 'cs') url.searchParams.set('lang', lang); else url.searchParams.delete('lang');
     history.replaceState(null, '', url);
     applyStaticTexts();
     PRIORITY.forEach((s) => { if (srcState[s]) setSrcState(s, ...srcState[s]); });

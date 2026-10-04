@@ -150,6 +150,12 @@
       noYear: 'Chybí rok vydání.', badIsbn: 'ISBN nemá platný kontrolní součet – zkontroluj ho.',
       noUrl: 'U online knihy chybí adresa (URL).',
     },
+    sk: {
+      and: 'a', translated: 'Preklad', cited: 'cit.', available: 'Dostupné na',
+      noTitle: 'Chýba názov.', noPublisher: 'Chýba vydavateľ.', noPlace: 'Chýba miesto vydania.',
+      noYear: 'Chýba rok vydania.', badIsbn: 'ISBN nemá platný kontrolný súčet – skontroluj ho.',
+      noUrl: 'Pri online knihe chýba adresa (URL).',
+    },
     en: {
       and: 'and', translated: 'Translated by', cited: 'viewed', available: 'Available from',
       noTitle: 'Title is missing.', noPublisher: 'Publisher is missing.', noPlace: 'Place of publication is missing.',
@@ -163,17 +169,21 @@
   const ORD_CS = {
     'první': 1, 'druhé': 2, 'třetí': 3, 'čtvrté': 4, 'páté': 5, 'šesté': 6, 'sedmé': 7,
     'osmé': 8, 'deváté': 9, 'desáté': 10, 'jedenácté': 11, 'dvanácté': 12,
+    // slovensky
+    'prvé': 1, 'tretie': 3, 'štvrté': 4, 'piate': 5, 'šieste': 6, 'siedme': 7,
+    'ôsme': 8, 'deviate': 9, 'desiate': 10, 'jedenáste': 11, 'dvanáste': 12,
   };
   const ORD_EN = {
     first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10,
   };
   // Doplňující údaje o vydání: [rozpoznání, česká zkratka, anglická zkratka]
+  // [rozpoznání, česky, anglicky, slovensky]
   const QUALIFIERS = [
-    [/přeprac\w*|upraven\w*|upr\.|revid\w*|revis\w*|\brev\b/i, 'přeprac.', 'rev.'],
-    [/rozšíř\w*|rozš\.|enlarg\w*|expand\w*|\benl\b/i, 'rozš.', 'enl.'],
-    [/doplň\w*|doplněn\w*|dopl\.|supplement\w*|\bsuppl\b/i, 'dopl.', 'suppl.'],
-    [/opraven\w*|opr\.|correct\w*|\bcorr\b/i, 'opr.', 'corr.'],
-    [/aktualiz\w*|updat\w*/i, 'aktualiz.', 'updated'],
+    [/přeprac\w*|preprac\w*|upraven\w*|upr\.|revid\w*|revis\w*|\brev\b/i, 'přeprac.', 'rev.', 'preprac.'],
+    [/rozšíř\w*|rozšír\w*|rozš\.|enlarg\w*|expand\w*|\benl\b/i, 'rozš.', 'enl.', 'rozš.'],
+    [/doplň\w*|doplněn\w*|doplnen\w*|dopl\.|supplement\w*|\bsuppl\b/i, 'dopl.', 'suppl.', 'dopl.'],
+    [/opraven\w*|opr\.|correct\w*|\bcorr\b/i, 'opr.', 'corr.', 'opr.'],
+    [/aktualiz\w*|updat\w*/i, 'aktualiz.', 'updated', 'aktualiz.'],
   ];
 
   function enSuffix(n) {
@@ -181,8 +191,8 @@
     return { 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th';
   }
 
-  // „Vydání druhé, přepracované“ → „2., přeprac. vyd.“ (cs) / „2nd rev. ed.“ (en);
-  // první vydání se neuvádí. V češtině zůstane anglický údaj ze zdroje anglicky.
+  // „Vydání druhé, přepracované“ → „2., přeprac. vyd.“ (cs) / „2., preprac. vyd.“ (sk) / „2nd rev. ed.“ (en);
+  // první vydání se neuvádí. V češtině a slovenštině zůstane anglický údaj ze zdroje anglicky.
   function normalizeEdition(raw, lang) {
     const s = clean(raw);
     if (!s) return '';
@@ -198,11 +208,11 @@
         if (new RegExp('(^|[^\\p{L}])' + w + '($|[^\\p{L}])', 'u').test(lower)) { n = v; break; }
       }
     }
-    const quals = [...new Set(QUALIFIERS.filter(([re]) => re.test(lower)).map((q) => (english ? q[2] : q[1])))];
+    const quals = [...new Set(QUALIFIERS.filter(([re]) => re.test(lower)).map((q) => (english ? q[2] : lang === 'sk' ? q[3] : q[1])))];
 
     if (n == null) {
       if (english && !sourceEnglish) return quals.length ? quals.join(' ') + ' ed.' : s;
-      return s.replace(/vydání/gi, 'vyd.');
+      return s.replace(/vydání|vydanie/gi, 'vyd.');
     }
     if (n === 1 && !quals.length) return '';
     if (english) return `${n}${enSuffix(n)} ${quals.length ? quals.join(' ') + ' ' : ''}ed.`;
@@ -212,14 +222,22 @@
   /* ---------- Odhad místa vydání podle nakladatele ---------- */
 
   const PUBLISHER_PLACES = [
+    // Slovensko (musí být před českými – např. „Grada Slovakia“)
+    [/grada slovakia/i, 'Bratislava'], [/tatran/i, 'Bratislava'], [/marenčin/i, 'Bratislava'],
+    [/artforum/i, 'Bratislava'], [/\bveda\b/i, 'Bratislava'], [/slovenské pedagogické/i, 'Bratislava'],
+    [/mladé letá/i, 'Bratislava'], [/literárne informačné/i, 'Bratislava'], [/perfekt/i, 'Bratislava'],
+    [/iura edition/i, 'Bratislava'], [/univerzita komenského/i, 'Bratislava'], [/ekonóm/i, 'Bratislava'],
+    [/slovenská technická univerzita|spektrum stu/i, 'Bratislava'], [/spolok slovenských spisovateľov/i, 'Bratislava'],
+    [/matica slovenská/i, 'Martin'], [/osveta/i, 'Martin'], [/\bedis\b|žilinská univerzita/i, 'Žilina'],
+    [/technická univerzita v košiciach|šafárika/i, 'Košice'],
     [/academia/i, 'Praha'], [/albatros/i, 'Praha'], [/argo/i, 'Praha'], [/grada/i, 'Praha'],
     [/portál/i, 'Praha'], [/euromedia/i, 'Praha'], [/mladá fronta/i, 'Praha'], [/odeon/i, 'Praha'],
     [/paseka/i, 'Praha'], [/torst/i, 'Praha'], [/karolinum/i, 'Praha'], [/vyšehrad/i, 'Praha'],
     [/triton/i, 'Praha'], [/galén/i, 'Praha'], [/wolters kluwer/i, 'Praha'], [/c\. ?h\. ?beck/i, 'Praha'],
-    [/fragment/i, 'Praha'], [/ikar/i, 'Praha'], [/slovart/i, 'Praha'], [/práh/i, 'Praha'],
+    [/fragment/i, 'Praha'], [/práh/i, 'Praha'],
     [/dokořán/i, 'Praha'], [/lidové noviny|\bnln\b/i, 'Praha'], [/baronet/i, 'Praha'], [/plus\b/i, 'Praha'],
     [/knižní klub/i, 'Praha'], [/motto/i, 'Praha'], [/mladá fronta/i, 'Praha'], [/svoboda/i, 'Praha'],
-    [/československý spisovatel/i, 'Praha'], [/státní pedagogické|\bspn\b/i, 'Praha'], [/fortuna/i, 'Praha'],
+    [/československý spisovatel/i, 'Praha'], [/státní pedagogické/i, 'Praha'], [/fortuna/i, 'Praha'],
     [/prometheus/i, 'Praha'], [/maxdorf/i, 'Praha'], [/avicenum/i, 'Praha'], [/naše vojsko/i, 'Praha'],
     [/leda/i, 'Voznice'], [/host\b/i, 'Brno'], [/jota/i, 'Brno'], [/computer press/i, 'Brno'],
     [/masarykova univerzita|munipress/i, 'Brno'], [/\bcpress\b/i, 'Brno'], [/moba/i, 'Brno'],
@@ -383,7 +401,7 @@
   // Vrací { text, html, warnings }
   function buildCitation(d, opts) {
     opts = opts || {};
-    const lang = opts.lang === 'en' ? 'en' : 'cs';
+    const lang = WORDS[opts.lang] ? opts.lang : 'cs';
     const W = WORDS[lang];
     const parts = []; // {text, html, noDot}
     const add = (text, html, noDot) => { if (text) parts.push({ text, html: html == null ? esc(text) : html, noDot }); };
@@ -410,7 +428,8 @@
     }
 
     // Vydání
-    add(clean(d.edition) ? normalizeEditionLoose(d.edition) : '');
+    // i ručně psané vydání převedeme do zkratek daného jazyka; 1. vydání se neuvádí
+    add(normalizeEdition(d.edition, lang));
 
     // Překladatel
     const tr = (d.translators || []).filter((p) => clean(p.family)).map(personNatural);
@@ -456,12 +475,6 @@
       html += p.html + (needsDot ? '.' : '') + (last ? '' : ' ');
     });
     return { text, html, warnings };
-  }
-
-  // Ve formuláři může být vydání napsané volně; „1. vyd.“ necháme, jak je, pokud ho tam uživatel dal.
-  function normalizeEditionLoose(s) {
-    const c = clean(s);
-    return /\bvyd\b(?!\.)/i.test(c) ? c.replace(/\bvyd\b(?!\.)/gi, 'vyd.') : c;
   }
 
   /* ---------- Porovnání zdrojů ---------- */

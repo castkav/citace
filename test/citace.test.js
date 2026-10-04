@@ -97,3 +97,25 @@ test('anglická ISO 690', () => {
   assert.equal(c.text, 'NĚMCOVÁ, Božena and NOVÁK, Jan. Babička: obrazy venkovského života [online]. 2nd ed. Translated by John Smith. Praha: Albatros, 2018 [viewed 2026-10-04]. ISBN 978-0-306-40615-7. Available from: https://example.org');
   assert.deepEqual(C.buildCitation({ title: 'X' }, { lang: 'en' }).warnings[0], 'Publisher is missing.');
 });
+
+test('slovenská STN ISO 690', () => {
+  assert.equal(C.normalizeEdition('Druhé vydanie'), '2. vyd.');
+  assert.equal(C.normalizeEdition('Vydanie prvé'), '');
+  assert.equal(C.normalizeEdition('3., prepracované a rozšírené vydanie', 'sk'), '3., preprac. rozš. vyd.');
+  assert.equal(C.normalizeEdition('3., přepracované vydání', 'sk'), '3., preprac. vyd.');
+  assert.equal(C.normalizeEdition('Tretie vydanie', 'en'), '3rd ed.');
+  assert.equal(C.guessPlace('Matica slovenská'), 'Martin');
+  assert.equal(C.guessPlace('Grada Slovakia'), 'Bratislava');
+  assert.equal(C.guessPlace('Grada'), 'Praha');
+  assert.equal(C.guessPlace('Ikar'), '');
+  const c = C.buildCitation({
+    authors: [{ family: 'Kováč', given: 'Ján' }, { family: 'Horváthová', given: 'Mária' }],
+    title: 'Slovenské dejiny', edition: '2., preprac. vyd.', translators: [{ family: 'Novák', given: 'Peter' }],
+    place: 'Martin', publisher: 'Matica slovenská', year: '2021',
+    online: true, cited: '2026-10-04', url: 'https://example.sk',
+  }, { lang: 'sk' });
+  assert.equal(c.text, 'KOVÁČ, Ján a HORVÁTHOVÁ, Mária. Slovenské dejiny [online]. 2., preprac. vyd. Preklad Peter Novák. Martin: Matica slovenská, 2021 [cit. 2026-10-04]. Dostupné na: https://example.sk');
+  assert.equal(C.buildCitation({ title: 'X' }, { lang: 'sk' }).warnings[0], 'Chýba vydavateľ.');
+  assert.equal(C.buildCitation({ title: 'X', edition: '3., prepracované vydanie' }, { lang: 'sk' }).text, 'X. 3., preprac. vyd.');
+  assert.equal(C.buildCitation({ title: 'X', edition: '1. vyd.' }).text, 'X.');
+});

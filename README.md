@@ -2,14 +2,19 @@
 
 Citátor knih podle **ČSN ISO 690:2022**. Napíšeš ISBN, název nebo autora (klidně nepřesně), aplikace knihu najde a sestaví citaci, kterou zkopíruješ i s kurzívou rovnou do Wordu.
 
-## CZ / EN
+## CZ / SK / EN
 
 Přepínač nahoře mění jazyk citace i celé stránky:
 
-- **CZ**: ČSN ISO 690:2022, tedy `2. vyd.`, `Překlad`, `[cit. …]`, `Dostupné z:`
-- **EN**: ISO 690 v angličtině pro zahraniční studenty, tedy `2nd ed.`, `Translated by`, `[viewed …]`, `Available from:`
+| | norma | vydání | překlad | online |
+|---|---|---|---|---|
+| **CZ** | ČSN ISO 690:2022 | `2., přeprac. vyd.` | `Překlad …` | `[cit. …]`, `Dostupné z:` |
+| **SK** | STN ISO 690:2022 | `2., preprac. vyd.` | `Preklad …` | `[cit. …]`, `Dostupné na:` |
+| **EN** | ISO 690 v angličtině | `2nd rev. ed.` | `Translated by …` | `[viewed …]`, `Available from:` |
 
-Údaje o knize (název, nakladatel, místo) zůstávají v obou případech v jazyce originálu. Mění se jen pomocná slova. Anglická verze se otevře rovnou odkazem `https://castkav.github.io/citace/?lang=en`. Každý jazyk má vlastní seznam literatury.
+Údaje o knize (název, nakladatel, místo) zůstávají vždy v jazyce originálu. Mění se jen pomocná slova. Jazyk jde zvolit i odkazem: `https://castkav.github.io/citace/?lang=sk` nebo `?lang=en`. Každý jazyk má vlastní seznam literatury.
+
+Slovenské knihy se hledají ve stejných zdrojích. Knihovny.cz mají ve fondech českých knihoven i hodně slovenských titulů. Slovenské knihovní katalogy veřejné webové rozhraní pro přímé volání ze stránky nenabízejí.
 
 ## Odkud bere údaje
 
