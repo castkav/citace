@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Citace knih</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;1,400&display=swap">
+<style>
+:root {
+  --bg: #edf0f4;
+  --surface: #ffffff;
+  --sunken: #f5f7fa;
+  --ink: #141b26;
+  --muted: #586376;
+  --line: #d5dbe4;
+  --accent: #2446c2;
+  --accent-soft: #e6ebfb;
+  --bad: #b3261e;
+  --bad-soft: #fcebea;
+  --warn: #8a5300;
+  --warn-soft: #fff2d9;
+  --ok: #1b7040;
+  --ok-soft: #e3f4e9;
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e131a; --surface: #161d27; --sunken: #121820; --ink: #e5eaf1; --muted: #97a2b4; --line: #2a3441;
+    --accent: #8aa4ff; --accent-soft: #1c2742; --bad: #ff8a80; --bad-soft: #3a1d1c; --warn: #f2b85b; --warn-soft: #3a2b12;
+    --ok: #6fd49a; --ok-soft: #143020;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e131a; --surface: #161d27; --sunken: #121820; --ink: #e5eaf1; --muted: #97a2b4; --line: #2a3441;
+  --accent: #8aa4ff; --accent-soft: #1c2742; --bad: #ff8a80; --bad-soft: #3a1d1c; --warn: #f2b85b; --warn-soft: #3a2b12;
+  --ok: #6fd49a; --ok-soft: #143020;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-sans); }
+.wrap {
+  max-width: 920px; margin: 0 auto;
+  padding-inline: clamp(16px, 3vw, 28px); padding-block: 24px 48px;
+  display: grid; gap: 16px;
+}
+h1 { margin: 0; font-size: 26px; line-height: 1.15; font-weight: 700; letter-spacing: -.02em; }
+.intro { margin: 4px 0 0; color: var(--muted); max-width: 66ch; }
+
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.box-head {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+}
+.box-head h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.box-body { padding: 14px 16px; }
+.note { font-size: 13px; color: var(--muted); }
+[hidden] { display: none !important; }
+
+button, .btn {
+  font: 500 13px/1 var(--font-sans); color: var(--ink); background: var(--sunken);
+  border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] button.primary { color: #0e131a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) button.primary { color: #0e131a; } }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; }
+
+input[type="text"], input[type="search"], input[type="url"], input[type="date"], input[type="password"], select {
+  width: 100%; min-width: 0; font: 14px/1.4 var(--font-sans); color: var(--ink); background: var(--sunken);
+  border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px;
+}
+
+/* Hledání */
+.search { display: flex; gap: 8px; padding: 14px 16px; }
+.search input { font-size: 16px; padding: 10px 12px; background: var(--surface); }
+.search button { padding-inline: 16px; }
+.sources { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 0 16px 12px; font-size: 13px; color: var(--muted); }
+.src-state::before { content: "○ "; }
+.src-state.loading::before { content: "◌ "; }
+.src-state.ok::before { content: "● "; color: var(--ok); }
+.src-state.err::before { content: "● "; color: var(--bad); }
+
+/* Výsledky */
+.results { list-style: none; margin: 0; padding: 0; }
+.result {
+  display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: start;
+  padding: 12px 16px; border-top: 1px solid var(--line);
+}
+.result:first-child { border-top: 0; }
+.cover { width: 44px; height: 64px; border-radius: 3px; background: var(--sunken); border: 1px solid var(--line); overflow: hidden; }
+.cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.r-title { font-weight: 600; overflow-wrap: anywhere; }
+.r-sub { font-weight: 400; color: var(--muted); }
+.r-meta { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.tag { font: 500 11px/1 var(--font-sans); padding: 4px 7px; border-radius: 999px; background: var(--sunken); color: var(--muted); border: 1px solid var(--line); }
+.tag.multi { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.tag.approx { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.empty { padding: 14px 16px; color: var(--muted); }
+
+/* Formulář */
+.grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px 12px; }
+.f { display: grid; gap: 4px; min-width: 0; grid-column: span 6; }
+.f.s3 { grid-column: span 3; }
+.f.s2 { grid-column: span 2; }
+.f label, .f .lbl { font-size: 12px; font-weight: 600; color: var(--muted); }
+.f .hint { font-size: 12px; color: var(--warn); }
+@media (max-width: 640px) { .f.s3, .f.s2 { grid-column: span 6; } }
+.persons { display: grid; gap: 6px; }
+.person { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; }
+.person button { padding-inline: 10px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.check { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; }
+
+/* Citace */
+.cite {
+  font: 17px/1.6 var(--font-serif); padding: 16px; background: var(--sunken);
+  border: 1px solid var(--line); border-radius: 8px; overflow-wrap: anywhere;
+}
+.warnings { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.warnings li { font-size: 13px; color: var(--warn); background: var(--warn-soft); padding: 6px 10px; border-radius: 6px; }
+
+/* Ověření */
+.verify-sum { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+.pill { font: 600 13px/1 var(--font-sans); padding: 6px 10px; border-radius: 999px; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-top: 1px solid var(--line); }
+thead th { border-top: 0; background: var(--sunken); color: var(--muted); font-weight: 600; white-space: nowrap; }
+td.field { font-weight: 600; color: var(--muted); white-space: nowrap; }
+td .v { overflow-wrap: anywhere; }
+td.same .v::before { content: "✓ "; color: var(--ok); font-weight: 700; }
+td.diff { background: var(--warn-soft); }
+td.diff .v::before { content: "≠ "; color: var(--warn); font-weight: 700; }
+td.none { color: var(--muted); }
+td button { margin-top: 4px; padding: 4px 8px; font-size: 12px; }
+
+/* Seznam */
+.biblio { margin: 0; padding: 0 16px; list-style: none; }
+.biblio li { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); font: 15px/1.55 var(--font-serif); }
+.biblio li:first-child { border-top: 0; }
+.biblio li button { font-family: var(--font-sans); }
+.biblio li .btns { align-self: start; flex-wrap: nowrap; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--ink); color: var(--bg);
+  padding: 10px 16px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+.toast.show { opacity: 1; }
+details summary { cursor: pointer; font-size: 14px; color: var(--muted); }
+footer { font-size: 13px; color: var(--muted); }
+footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Citace knih</h1>
+    <p class="intro">Napiš ISBN, název nebo autora, klidně nepřesně. Knihu vyhledám v českých knihovnách (Knihovny.cz), v Open Library a v Google Books, porovnám údaje mezi zdroji a sestavím citaci podle ČSN ISO 690:2022.</p>
+  </header>
+
+  <section class="box">
+    <form class="search" id="searchForm" role="search">
+      <input type="search" id="q" placeholder="např. 978-80-00-05056-6 nebo „nemcova babicka albatros“" autocomplete="off" aria-label="Hledat knihu">
+      <button class="primary" type="submit">Hledat</button>
+    </form>
+    <div class="sources" id="sources">
+      <span class="src-state" data-src="knihovny">Knihovny.cz</span>
+      <span class="src-state" data-src="openlibrary">Open Library</span>
+      <span class="src-state" data-src="google">Google Books</span>
+      <span style="flex:1"></span>
+      <button type="button" id="manualBtn">Vyplnit ručně</button>
+    </div>
+  </section>
+
+  <section class="box" id="resultsBox" hidden>
+    <div class="box-head"><h2>Nalezené knihy</h2><span class="note" id="resultsNote"></span></div>
+    <ul class="results" id="results"></ul>
+  </section>
+
+  <section class="box" id="formBox" hidden>
+    <div class="box-head"><h2>Údaje o knize</h2><span class="note">Vše jde upravit, citace se mění hned.</span></div>
+    <div class="box-body">
+      <form id="bookForm" class="grid" autocomplete="off" onsubmit="return false">
+        <div class="f">
+          <div class="row">
+            <span class="lbl">Tvůrci</span>
+            <select id="creatorRole" style="width:auto">
+              <option value="aut">autoři</option>
+              <option value="edt">editoři (ed.)</option>
+            </select>
+          </div>
+          <div class="persons" id="authors"></div>
+          <div><button type="button" data-add="authors">+ přidat tvůrce</button></div>
+        </div>
+        <div class="f"><label for="corporate">Korporace jako autor (jen když chybí osoby)</label><input type="text" id="corporate"></div>
+        <div class="f s3"><label for="title">Název</label><input type="text" id="title"></div>
+        <div class="f s3"><label for="subtitle">Podnázev</label><input type="text" id="subtitle"></div>
+        <div class="f s2"><label for="edition">Vydání (1. se neuvádí)</label><input type="text" id="edition" placeholder="např. 2. vyd."></div>
+        <div class="f s2"><label for="series">Edice (nepovinné)</label><input type="text" id="series"></div>
+        <div class="f s2"><label for="isbn">ISBN</label><input type="text" id="isbn"></div>
+        <div class="f s2"><label for="place">Místo vydání</label><input type="text" id="place"><span class="hint" id="placeHint" hidden>Odhadnuto podle nakladatele – ověř.</span></div>
+        <div class="f s2"><label for="publisher">Nakladatel</label><input type="text" id="publisher"></div>
+        <div class="f s2"><label for="year">Rok vydání</label><input type="text" id="year" inputmode="numeric"></div>
+        <div class="f">
+          <span class="lbl">Překladatel (nepovinné)</span>
+          <div class="persons" id="translators"></div>
+          <div><button type="button" data-add="translators">+ přidat překladatele</button></div>
+        </div>
+        <div class="f">
+          <label class="check"><input type="checkbox" id="online"> Elektronická kniha online</label>
+        </div>
+        <div class="f s3" data-online hidden><label for="url">Dostupné z (URL)</label><input type="url" id="url"></div>
+        <div class="f s3" data-online hidden><label for="cited">Datum citování</label><input type="date" id="cited"></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="box" id="citeBox" hidden>
+    <div class="box-head">
+      <h2>Citace</h2>
+      <div class="btns">
+        <button class="primary" type="button" id="copyBtn">Kopírovat</button>
+        <button type="button" id="copyTextBtn">Kopírovat bez formátu</button>
+        <button type="button" id="addBtn">Přidat do seznamu</button>
+      </div>
+    </div>
+    <div class="box-body">
+      <div class="cite" id="cite"></div>
+      <ul class="warnings" id="warnings"></ul>
+    </div>
+  </section>
+
+  <section class="box" id="verifyBox" hidden>
+    <div class="box-head"><h2>Ověření v dalších zdrojích</h2><span class="note" id="verifyNote"></span></div>
+    <div class="box-body">
+      <div class="verify-sum" id="verifySum"></div>
+      <div class="table-wrap"><table id="verifyTable"></table></div>
+      <p class="note">✓ zdroj souhlasí s formulářem, ≠ zdroj uvádí něco jiného (tlačítkem „použít“ hodnotu převezmeš), prázdné = zdroj údaj nemá. Knihovní katalog (Knihovny.cz) bývá u českých knih nejspolehlivější.</p>
+    </div>
+  </section>
+
+  <section class="box" id="biblioBox" hidden>
+    <div class="box-head">
+      <h2>Můj seznam literatury <span class="note" id="biblioCount"></span></h2>
+      <div class="btns">
+        <button type="button" id="copyAllBtn">Kopírovat celý seznam</button>
+        <button type="button" id="clearAllBtn">Vymazat</button>
+      </div>
+    </div>
+    <ol class="biblio" id="biblio"></ol>
+    <div style="height:6px"></div>
+  </section>
+
+  <details>
+    <summary>Nastavení</summary>
+    <div class="box" style="margin-top:8px"><div class="box-body grid">
+      <div class="f">
+        <label for="gkey">Klíč Google Books API (nepovinné)</label>
+        <input type="password" id="gkey" placeholder="AIza…">
+        <span class="note">Bez klíče funguje Google Books s denním limitem dotazů. Klíč si můžeš zdarma vytvořit v Google Cloud Console a uložit ho sem. Zůstane jen v tomto prohlížeči.</span>
+      </div>
+    </div></div>
+  </details>
+
+  <footer>Formát: ČSN ISO 690:2022 (kniha). Údaje: <a href="https://www.knihovny.cz" target="_blank" rel="noopener">Knihovny.cz</a>, <a href="https://openlibrary.org" target="_blank" rel="noopener">Open Library</a>, <a href="https://books.google.com" target="_blank" rel="noopener">Google Books</a>. Vše běží v prohlížeči, seznam se ukládá jen v tomto zařízení.</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="citace.js"></script>
+<script>
+(function () {
+  'use strict';
+  const C = window.Citace;
+  const $ = (id) => document.getElementById(id);
+  const SOURCES = {
+    knihovny: 'Knihovny.cz',
+    openlibrary: 'Open Library',
+    google: 'Google Books',
+  };
+  const PRIORITY = ['knihovny', 'openlibrary', 'google'];
+  const FIELDS_KNIHOVNY = ['id', 'title', 'shortTitle', 'subTitle', 'authors', 'edition', 'placesOfPublication',
+    'publishers', 'publicationDates', 'isbns', 'series', 'formats', 'recordPage'];
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* bez úložiště */ } },
+  };
+
+  /* ---------- Volání zdrojů ---------- */
+
+  async function getJson(url, signal) {
+    const res = await fetch(url, { signal });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  }
+
+  async function searchKnihovny(q, signal) {
+    const p = new URLSearchParams({ lookfor: q, type: 'AllFields', limit: '20', lng: 'cs' });
+    FIELDS_KNIHOVNY.forEach((f) => p.append('field[]', f));
+    const j = await getJson('https://www.knihovny.cz/api/v1/search?' + p, signal);
+    return (j.records || []).map(C.fromKnihovny);
+  }
+
+  async function searchOpenLibrary(q, isbn, signal) {
+    if (isbn) {
+      const j = await getJson('https://openlibrary.org/api/books?format=json&jscmd=data&bibkeys=ISBN:' + isbn, signal);
+      return Object.values(j).map((d) => C.fromOpenLibraryData(d, isbn));
+    }
+    const fields = ['key', 'title', 'subtitle', 'author_name', 'first_publish_year', 'publisher', 'publish_place', 'isbn', 'cover_i',
+      'editions', 'editions.key', 'editions.title', 'editions.subtitle', 'editions.publisher', 'editions.publish_date',
+      'editions.publish_place', 'editions.isbn', 'editions.edition_name', 'editions.cover_i'].join(',');
+    const p = new URLSearchParams({ q, limit: '10', fields });
+    const j = await getJson('https://openlibrary.org/search.json?' + p, signal);
+    return (j.docs || []).map(C.fromOpenLibrarySearch);
+  }
+
+  async function searchGoogle(q, isbn, signal) {
+    const p = new URLSearchParams({ q: isbn ? 'isbn:' + isbn : q, maxResults: '15', printType: 'books' });
+    const key = store.get('citace.gkey', '');
+    if (key) p.set('key', key);
+    const j = await getJson('https://www.googleapis.com/books/v1/volumes?' + p, signal);
+    return (j.items || []).map(C.fromGoogle);
+  }
+
+  function runSource(src, q, isbn, signal) {
+    if (src === 'knihovny') return searchKnihovny(isbn || q, signal);
+    if (src === 'openlibrary') return searchOpenLibrary(q, isbn, signal);
+    return searchGoogle(q, isbn, signal);
+  }
+
+  /* ---------- Hledání a výsledky ---------- */
+
+  let searchCtl = null;
+  let lastResults = {}; // src → záznamy
+  let groups = [];
+
+  function setSrcState(src, state, title) {
+    const el = document.querySelector(`.src-state[data-src="${src}"]`);
+    el.className = 'src-state ' + state;
+    el.title = title || '';
+    el.textContent = SOURCES[src] + (state === 'ok' ? ` (${title})` : state === 'err' ? ' – nedostupné' : '');
+  }
+
+  function groupKey(r) {
+    const k = C.isbnKey(r.isbn);
+    return k ? 'isbn:' + k : 'tit:' + C.norm(r.title) + '|' + r.year + '|' + C.norm(r.publisher) + '|' + r.source + r.sourceId;
+  }
+
+  function regroup() {
+    const map = new Map();
+    for (const src of PRIORITY) {
+      for (const r of lastResults[src] || []) {
+        const k = groupKey(r);
+        if (!map.has(k)) map.set(k, { key: k, records: [] });
+        const g = map.get(k);
+        if (!g.records.some((x) => x.source === r.source)) g.records.push(r);
+      }
+    }
+    groups = [...map.values()];
+    // české knihovny první, pak podle počtu zdrojů, které knihu znají
+    groups.forEach((g, i) => { g.order = i; });
+    groups.sort((a, b) =>
+      PRIORITY.indexOf(a.records[0].source) - PRIORITY.indexOf(b.records[0].source) ||
+      b.records.length - a.records.length || a.order - b.order);
+  }
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+  function renderResults() {
+    const ul = $('results');
+    $('resultsBox').hidden = false;
+    if (!groups.length) {
+      const pending = document.querySelectorAll('.src-state.loading').length;
+      ul.innerHTML = `<li class="empty">${pending ? 'Hledám…' : 'Nic jsem nenašel. Zkus jiná slova nebo ISBN, případně vyplň údaje ručně.'}</li>`;
+      $('resultsNote').textContent = '';
+      return;
+    }
+    $('resultsNote').textContent = groups.length + (groups.length === 1 ? ' kniha' : groups.length < 5 ? ' knihy' : ' knih');
+    ul.innerHTML = groups.slice(0, 40).map((g, i) => {
+      const r = g.records[0];
+      const authors = r.authors.map(C.personNatural).join(', ') || r.corporate;
+      const imprint = [r.place && r.publisher ? `${r.place}: ${r.publisher}` : r.place || r.publisher, r.year].filter(Boolean).join(', ');
+      const meta = [authors, imprint, r.edition, r.isbn && 'ISBN ' + r.isbn].filter(Boolean).map(esc).join(' · ');
+      const tags = g.records.map((x) => `<span class="tag">${SOURCES[x.source]}</span>`).join('') +
+        (g.records.length > 1 ? `<span class="tag multi">shoda ve ${g.records.length} zdrojích</span>` : '') +
+        (r.approximate ? '<span class="tag approx">vydání nejisté</span>' : '');
+      const cover = g.records.map((x) => x.cover).find(Boolean);
+      return `<li class="result">
+        <div class="cover">${cover ? `<img src="${esc(cover)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</div>
+        <div>
+          <div class="r-title">${esc(r.title)}${r.subtitle ? `<span class="r-sub">: ${esc(r.subtitle)}</span>` : ''}</div>
+          <div class="r-meta">${meta}</div>
+          <div class="tags">${tags}</div>
+        </div>
+        <div class="btns"><button type="button" class="primary" data-pick="${i}">Vybrat</button></div>
+      </li>`;
+    }).join('');
+  }
+
+  async function search(q) {
+    q = q.trim();
+    if (!q) return;
+    if (searchCtl) searchCtl.abort();
+    const ctl = new AbortController();
+    searchCtl = ctl;
+    const isbn = C.queryIsbn(q);
+    lastResults = {};
+    groups = [];
+    PRIORITY.forEach((s) => setSrcState(s, 'loading'));
+    renderResults();
+    await Promise.all(PRIORITY.map(async (src) => {
+      try {
+        const recs = await runSource(src, q, isbn, ctl.signal);
+        if (ctl.signal.aborted) return;
+        lastResults[src] = isbn ? recs.filter((r) => r.isbns.some((x) => C.isbnKey(x) === C.isbnKey(isbn))).concat(
+          recs.filter((r) => !r.isbns.length)) : recs;
+        setSrcState(src, 'ok', String(lastResults[src].length));
+      } catch (e) {
+        if (ctl.signal.aborted) return;
+        lastResults[src] = [];
+        setSrcState(src, 'err', e.message);
+      }
+      regroup();
+      renderResults();
+    }));
+    // jediný jistý výsledek podle ISBN rovnou vybereme
+    if (isbn && groups.length === 1 && !ctl.signal.aborted) pick(groups[0]);
+  }
+
+  /* ---------- Formulář ---------- */
+
+  const TEXT_FIELDS = ['corporate', 'title', 'subtitle', 'edition', 'series', 'isbn', 'place', 'publisher', 'year', 'url', 'cited'];
+
+  function personRow(p, listId) {
+    const div = document.createElement('div');
+    div.className = 'person';
+    div.innerHTML = `<input type="text" data-k="family" placeholder="Příjmení" aria-label="Příjmení">
+      <input type="text" data-k="given" placeholder="Jméno" aria-label="Jméno">
+      <button type="button" data-remove aria-label="Odebrat">✕</button>`;
+    div.querySelector('[data-k="family"]').value = p.family || '';
+    div.querySelector('[data-k="given"]').value = p.given || '';
+    $(listId).appendChild(div);
+  }
+
+  function setPersons(listId, list) {
+    $(listId).innerHTML = '';
+    (list.length ? list : listId === 'authors' ? [{}] : []).forEach((p) => personRow(p, listId));
+  }
+
+  function getPersons(listId) {
+    return [...$(listId).querySelectorAll('.person')].map((row) => ({
+      family: row.querySelector('[data-k="family"]').value,
+      given: row.querySelector('[data-k="given"]').value,
+    })).filter((p) => p.family.trim() || p.given.trim());
+  }
+
+  function readForm() {
+    const d = { authors: getPersons('authors'), translators: getPersons('translators'), creatorRole: $('creatorRole').value, online: $('online').checked };
+    TEXT_FIELDS.forEach((f) => { d[f] = $(f).value; });
+    return d;
+  }
+
+  function fillForm(r) {
+    setPersons('authors', r.authors || []);
+    setPersons('translators', r.translators || []);
+    $('creatorRole').value = r.creatorRole || 'aut';
+    TEXT_FIELDS.forEach((f) => { if (f !== 'url' && f !== 'cited') $(f).value = r[f] || ''; });
+    $('placeHint').hidden = !r.placeGuessed;
+    $('formBox').hidden = false;
+    $('citeBox').hidden = false;
+    update();
+  }
+
+  function update() {
+    const online = $('online').checked;
+    document.querySelectorAll('[data-online]').forEach((el) => { el.hidden = !online; });
+    if (online && !$('cited').value) $('cited').value = new Date().toISOString().slice(0, 10);
+    const c = C.buildCitation(readForm());
+    $('cite').innerHTML = c.html || '<span class="note">Vyplň údaje o knize.</span>';
+    $('warnings').innerHTML = c.warnings.map((w) => `<li>${esc(w)}</li>`).join('');
+    current = c;
+    renderVerify();
+  }
+  let current = null;
+
+  /* ---------- Ověření v dalších zdrojích ---------- */
+
+  let verify = null; // { isbn, bySrc: {src: record|null|'err'|'loading'} }
+  let verifyCtl = null;
+
+  function pick(g) {
+    const r = g.records[0];
+    fillForm(r);
+    startVerify(r, g.records);
+    $('formBox').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function startVerify(r, known) {
+    if (verifyCtl) verifyCtl.abort();
+    const key = C.isbnKey(r.isbn);
+    verify = { isbn: key, bySrc: {}, picked: r.source };
+    $('verifyBox').hidden = false;
+    if (!key) { renderVerify(); return; }
+    const ctl = new AbortController();
+    verifyCtl = ctl;
+    for (const src of PRIORITY) {
+      const k = known.find((x) => x.source === src && !x.approximate);
+      verify.bySrc[src] = k || 'loading';
+    }
+    renderVerify();
+    await Promise.all(PRIORITY.filter((s) => verify.bySrc[s] === 'loading').map(async (src) => {
+      try {
+        const recs = await runSource(src, key, key, ctl.signal);
+        if (ctl.signal.aborted) return;
+        verify.bySrc[src] = recs.find((x) => x.isbns.some((i) => C.isbnKey(i) === key)) || null;
+      } catch (e) {
+        if (ctl.signal.aborted) return;
+        verify.bySrc[src] = 'err';
+      }
+      renderVerify();
+    }));
+  }
+
+  const VERIFY_FIELDS = [
+    ['authors', 'Autoři', (r) => r.authors, (v) => (v || []).map(C.personNatural).join(', ')],
+    ['title', 'Název', (r) => r.title, (v) => v],
+    ['edition', 'Vydání', (r) => r.edition, (v) => v],
+    ['place', 'Místo', (r) => (r.placeGuessed ? '' : r.place), (v) => v],
+    ['publisher', 'Nakladatel', (r) => r.publisher, (v) => v],
+    ['year', 'Rok', (r) => r.year, (v) => v],
+    ['isbn', 'ISBN', (r) => r.isbns, (v) => [].concat(v || []).join(', ')],
+  ];
+
+  function renderVerify() {
+    if (!verify) return;
+    const box = $('verifySum');
+    const table = $('verifyTable');
+    if (!verify.isbn) {
+      $('verifyNote').textContent = '';
+      box.innerHTML = '<span class="pill warn">Kniha nemá ISBN, v dalších zdrojích ji nejde spolehlivě dohledat</span>';
+      table.innerHTML = '';
+      return;
+    }
+    const form = readForm();
+    const formVals = { authors: form.authors, title: form.title, edition: form.edition, place: form.place, publisher: form.publisher, year: form.year, isbn: [form.isbn] };
+    const srcs = PRIORITY;
+    let found = 0;
+    let diffs = 0;
+    let head = '<thead><tr><th>Údaj</th><th>Ve formuláři</th>';
+    srcs.forEach((s) => {
+      const st = verify.bySrc[s];
+      const label = st === 'loading' ? 'hledám…' : st === 'err' ? 'nedostupné' : st ? '' : 'nenalezeno';
+      if (st && typeof st === 'object') found++;
+      head += `<th>${SOURCES[s]}${label ? ` <span class="note">(${label})</span>` : ''}</th>`;
+    });
+    head += '</tr></thead>';
+    let body = '<tbody>';
+    for (const [f, label, get, show] of VERIFY_FIELDS) {
+      const fv = formVals[f];
+      body += `<tr><td class="field">${label}</td><td><span class="v">${esc(show(fv)) || '<span class="note">–</span>'}</span></td>`;
+      for (const s of srcs) {
+        const r = verify.bySrc[s];
+        if (!r || typeof r !== 'object') { body += '<td class="none"></td>'; continue; }
+        const sv = get(r);
+        const shown = show(sv);
+        let cmp = C.compareField(f, fv, sv);
+        if (f === 'edition') {
+          // zdroj bez údaje o vydání (Google Books ho nemá) nic nevyvrací; prázdné pole ve formuláři = 1. vydání
+          cmp = !sv ? 'none' : C.compareField(f, fv || '1. vyd.', sv);
+        }
+        if (cmp === 'diff' && f !== 'isbn') diffs++;
+        const canUse = cmp === 'diff' && f !== 'isbn' && shown;
+        body += `<td class="${shown ? cmp : 'none'}"><span class="v">${esc(shown)}</span>${canUse ? `<br><button type="button" data-use="${f}" data-src="${s}">použít</button>` : ''}</td>`;
+      }
+      body += '</tr>';
+    }
+    body += '</tbody>';
+    table.innerHTML = head + body;
+    const pending = srcs.some((s) => verify.bySrc[s] === 'loading');
+    $('verifyNote').textContent = 'podle ISBN ' + verify.isbn;
+    const pills = [];
+    pills.push(`<span class="pill ${found >= 2 ? 'ok' : 'warn'}">Kniha nalezena ve ${found} ze ${srcs.length} zdrojů</span>`);
+    if (!pending) pills.push(diffs ? `<span class="pill warn">Rozdílů mezi zdroji: ${diffs}, zkontroluj zvýrazněná pole</span>` : found >= 2 ? '<span class="pill ok">Údaje se shodují</span>' : '');
+    else pills.push('<span class="note">Ověřuji…</span>');
+    box.innerHTML = pills.join('');
+  }
+
+  function useValue(field, src) {
+    const r = verify && verify.bySrc[src];
+    if (!r || typeof r !== 'object') return;
+    if (field === 'authors') setPersons('authors', r.authors);
+    else {
+      $(field).value = r[field] || '';
+      if (field === 'place') $('placeHint').hidden = true;
+    }
+    update();
+  }
+
+  /* ---------- Kopírování a seznam ---------- */
+
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toast.t);
+    toast.t = setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  async function copy(html, text, plainOnly) {
+    try {
+      if (!plainOnly && window.ClipboardItem && navigator.clipboard.write) {
+        await navigator.clipboard.write([new ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([text], { type: 'text/plain' }),
+        })]);
+      } else {
+        await navigator.clipboard.writeText(text);
+      }
+      toast('Zkopírováno');
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      toast('Zkopírováno (bez formátu)');
+    }
+  }
+
+  let biblio = store.get('citace.seznam', []);
+
+  function renderBiblio() {
+    biblio.sort((a, b) => a.text.localeCompare(b.text, 'cs'));
+    $('biblioBox').hidden = !biblio.length;
+    $('biblioCount').textContent = biblio.length ? `(${biblio.length})` : '';
+    $('biblio').innerHTML = biblio.map((b, i) => `<li><span>${b.html}</span><span class="btns">
+      <button type="button" data-copy-item="${i}">Kopírovat</button><button type="button" data-del="${i}" aria-label="Smazat">✕</button></span></li>`).join('');
+  }
+
+  /* ---------- Události ---------- */
+
+  $('searchForm').addEventListener('submit', (e) => { e.preventDefault(); search($('q').value); });
+  $('results').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-pick]');
+    if (b) pick(groups[+b.dataset.pick]);
+  });
+  $('manualBtn').addEventListener('click', () => {
+    if (verifyCtl) verifyCtl.abort();
+    verify = null;
+    $('verifyBox').hidden = true;
+    fillForm(C.emptyRecord());
+    $('formBox').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  $('bookForm').addEventListener('input', update);
+  $('bookForm').addEventListener('change', update);
+  $('bookForm').addEventListener('click', (e) => {
+    const add = e.target.closest('[data-add]');
+    if (add) { personRow({}, add.dataset.add); return; }
+    const rm = e.target.closest('[data-remove]');
+    if (rm) { rm.parentElement.remove(); update(); }
+  });
+  $('place').addEventListener('input', () => { $('placeHint').hidden = true; });
+  $('verifyTable').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-use]');
+    if (b) useValue(b.dataset.use, b.dataset.src);
+  });
+  $('copyBtn').addEventListener('click', () => current && copy(current.html, current.text));
+  $('copyTextBtn').addEventListener('click', () => current && copy('', current.text, true));
+  $('addBtn').addEventListener('click', () => {
+    if (!current || !current.text) return;
+    if (!biblio.some((b) => b.text === current.text)) biblio.push({ html: current.html, text: current.text });
+    store.set('citace.seznam', biblio);
+    renderBiblio();
+    toast('Přidáno do seznamu');
+  });
+  $('biblio').addEventListener('click', (e) => {
+    const c = e.target.closest('[data-copy-item]');
+    if (c) { const b = biblio[+c.dataset.copyItem]; copy(b.html, b.text); return; }
+    const d = e.target.closest('[data-del]');
+    if (d) { biblio.splice(+d.dataset.del, 1); store.set('citace.seznam', biblio); renderBiblio(); }
+  });
+  $('copyAllBtn').addEventListener('click', () => {
+    copy(biblio.map((b) => `<p>${b.html}</p>`).join(''), biblio.map((b) => b.text).join('\n'));
+  });
+  $('clearAllBtn').addEventListener('click', () => {
+    if (!confirm('Opravdu vymazat celý seznam?')) return;
+    biblio = [];
+    store.set('citace.seznam', biblio);
+    renderBiblio();
+  });
+  $('gkey').value = store.get('citace.gkey', '');
+  $('gkey').addEventListener('change', () => store.set('citace.gkey', $('gkey').value.trim()));
+
+  renderBiblio();
+})();
+</script>
+</body>
+</html>
