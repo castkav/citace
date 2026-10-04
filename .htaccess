@@ -1,0 +1,74 @@
+# Citace knih – nastavení serveru (Apache, WEDOS)
+# Umístění: www/domains/akademikus.cz/.htaccess
+#
+# Web je statický: žádné PHP, databáze ani formuláře odesílané na server.
+
+# ---------- Základ ----------
+
+# Nevypisovat obsah složek
+Options -Indexes
+
+DirectoryIndex index.html
+AddDefaultCharset UTF-8
+AddType text/javascript .js
+AddType text/css .css
+
+# ---------- Vynucení HTTPS ----------
+# (WEDOS posílá u HTTPS i hlavičku X-Forwarded-Proto, proto obě podmínky)
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  RewriteCond %{HTTPS} !on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  # www.akademikus.cz → akademikus.cz (jedna adresa pro celý web)
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+
+  # Nic jiného než samotná aplikace není veřejné
+  # (.well-known zůstává přístupné kvůli certifikátu Let's Encrypt)
+  RewriteRule (^|/)\.(?!well-known/) - [F,L]
+  RewriteRule ^(test|node_modules)(/|$) - [F,L]
+  RewriteRule \.(md|log|json|lock|sh|ini|bak|old|orig|swp|php|sql)$ - [F,L]
+</IfModule>
+
+# Záloha pro případ, že by mod_rewrite nebyl k dispozici
+<FilesMatch "(^\.|\.(md|log|json|lock|sh|ini|bak|old|orig|swp|php|sql)$)">
+  Require all denied
+</FilesMatch>
+
+# ---------- Bezpečnostní hlavičky ----------
+
+<IfModule mod_headers.c>
+  # HSTS: prohlížeč bude rok chodit jen přes HTTPS (přes HTTP ho prohlížeče ignorují).
+  # Platí jen pro akademikus.cz (bez subdomén), aby to nerozbilo subdomény bez certifikátu.
+  Header always set Strict-Transport-Security "max-age=31536000"
+
+  # Clickjacking: stránku nejde vložit do cizího rámu
+  Header always set X-Frame-Options "DENY"
+
+  # MIME sniffing
+  Header always set X-Content-Type-Options "nosniff"
+
+  # Odkud smí stránka co načítat:
+  #  - skripty a styly jen z vlastního webu (plus písma Google Fonts),
+  #  - dotazy jen do Knihovny.cz, Open Library a Google Books,
+  #  - obrázky obálek z Open Library (archive.org) a Google Books.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://covers.openlibrary.org https://archive.org https://*.archive.org https://books.google.com https://*.googleusercontent.com; connect-src 'self' https://www.knihovny.cz https://openlibrary.org https://www.googleapis.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+
+  # Referrer: cizím webům posílat jen doménu. Nesmí být „no-referrer“ –
+  # klíč Google Books je omezený na akademikus.cz a Google podle toho pozná, odkud dotaz je.
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # Stránka nepotřebuje kameru, mikrofon, polohu ani platby
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+
+  # Po nahrání nové verze ji prohlížeč hned použije
+  <FilesMatch "\.(html|js|css)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
