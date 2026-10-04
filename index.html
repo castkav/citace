@@ -291,6 +291,7 @@ footer a { color: var(--accent); }
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="config.js"></script>
 <script src="citace.js"></script>
 <script>
 (function () {
@@ -478,7 +479,7 @@ footer a { color: var(--accent); }
 
   async function searchGoogle(q, isbn, signal) {
     const p = new URLSearchParams({ q: isbn ? 'isbn:' + isbn : q, maxResults: '15', printType: 'books' });
-    const key = store.get('citace.gkey', '');
+    const key = store.get('citace.gkey', '') || (window.CITACE_CONFIG || {}).googleBooksKey || '';
     if (key) p.set('key', key);
     const j = await getJson('https://www.googleapis.com/books/v1/volumes?' + p, signal);
     return (j.items || []).map(C.fromGoogle);

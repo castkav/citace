@@ -48,6 +48,14 @@ Citace jde přidat do seznamu, který se řadí abecedně a kopíruje najednou. 
 
 ## Spuštění
 
+### Vlastní webhosting (např. WEDOS)
+
+Databáze, PHP ani nic jiného na serveru potřeba není. Stačí nahrát přes FTP (nebo správce souborů) tři soubory: `index.html`, `citace.js` a `config.js`, třeba do složky `citace/`. Web musí běžet přes **https**, jinak prohlížeč nedovolí kopírování do schránky.
+
+Klíč Google Books pro všechny návštěvníky se vepíše do `config.js` na serveru (návod je přímo v souboru). Klíč je ve stránce veřejně čitelný, proto ho v Google Cloud Console omez jen na svou doménu a jen na Books API. Books API je zdarma, takže při zneužití hrozí nanejvýš vyčerpání denního limitu, ne platba.
+
+### GitHub Pages
+
 Statická stránka bez serveru: `index.html` + `citace.js`. Zapni GitHub Pages (Settings → Pages → Deploy from a branch → `main` / root) a aplikace poběží na `https://castkav.github.io/citace/`.
 
 Testy jádra: `node --test test/*.test.js`
