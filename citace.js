@@ -134,13 +134,29 @@
   }
 
   // Do pěti tvůrců všichni, jinak prvních pět a „et al.“
-  function formatPersons(list) {
+  function formatPersons(list, lang) {
     const names = list.filter((p) => clean(p.family)).map(personInverted);
     if (!names.length) return '';
     if (names.length > 5) return names.slice(0, 5).join('; ') + ' et al.';
     if (names.length === 1) return names[0];
-    return names.slice(0, -1).join('; ') + ' a ' + names[names.length - 1];
+    return names.slice(0, -1).join('; ') + (lang === 'en' ? ' and ' : ' a ') + names[names.length - 1];
   }
+
+  // Pomocná slova citace – údaje o knize zůstávají v jazyce originálu.
+  const WORDS = {
+    cs: {
+      and: 'a', translated: 'Překlad', cited: 'cit.', available: 'Dostupné z',
+      noTitle: 'Chybí název.', noPublisher: 'Chybí nakladatel.', noPlace: 'Chybí místo vydání.',
+      noYear: 'Chybí rok vydání.', badIsbn: 'ISBN nemá platný kontrolní součet – zkontroluj ho.',
+      noUrl: 'U online knihy chybí adresa (URL).',
+    },
+    en: {
+      and: 'and', translated: 'Translated by', cited: 'viewed', available: 'Available from',
+      noTitle: 'Title is missing.', noPublisher: 'Publisher is missing.', noPlace: 'Place of publication is missing.',
+      noYear: 'Year of publication is missing.', badIsbn: 'The ISBN check digit is invalid – please check it.',
+      noUrl: 'The URL of the online book is missing.',
+    },
+  };
 
   /* ---------- Vydání ---------- */
 
@@ -151,14 +167,13 @@
   const ORD_EN = {
     first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10,
   };
+  // Doplňující údaje o vydání: [rozpoznání, česká zkratka, anglická zkratka]
   const QUALIFIERS = [
-    [/přeprac\w*/i, 'přeprac.'],
-    [/rozšíř\w*|rozš\./i, 'rozš.'],
-    [/doplň\w*|doplněn\w*|dopl\./i, 'dopl.'],
-    [/upraven\w*|upr\./i, 'upr.'],
-    [/opraven\w*|opr\./i, 'opr.'],
-    [/aktualiz\w*/i, 'aktualiz.'],
-    [/revid\w*/i, 'rev.'],
+    [/přeprac\w*|upraven\w*|upr\.|revid\w*|revis\w*|\brev\b/i, 'přeprac.', 'rev.'],
+    [/rozšíř\w*|rozš\.|enlarg\w*|expand\w*|\benl\b/i, 'rozš.', 'enl.'],
+    [/doplň\w*|doplněn\w*|dopl\.|supplement\w*|\bsuppl\b/i, 'dopl.', 'suppl.'],
+    [/opraven\w*|opr\.|correct\w*|\bcorr\b/i, 'opr.', 'corr.'],
+    [/aktualiz\w*|updat\w*/i, 'aktualiz.', 'updated'],
   ];
 
   function enSuffix(n) {
@@ -166,32 +181,31 @@
     return { 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th';
   }
 
-  // „Vydání druhé, přepracované“ → „2., přeprac. vyd.“, „První vydání“ → „“ (1. vydání se neuvádí)
-  function normalizeEdition(raw) {
+  // „Vydání druhé, přepracované“ → „2., přeprac. vyd.“ (cs) / „2nd rev. ed.“ (en);
+  // první vydání se neuvádí. V češtině zůstane anglický údaj ze zdroje anglicky.
+  function normalizeEdition(raw, lang) {
     const s = clean(raw);
     if (!s) return '';
     const lower = s.toLocaleLowerCase('cs');
 
-    const english = /\b(edition|ed)\b|\d+(st|nd|rd|th)\b/.test(lower) && !/vyd/.test(lower);
+    const sourceEnglish = /\b(edition|ed)\b|\d+(st|nd|rd|th)\b/.test(lower) && !/vyd/.test(lower);
+    const english = lang === 'en' || sourceEnglish;
     let n = null;
     const dig = lower.match(/(\d+)\s*(\.|st|nd|rd|th)?/);
     if (dig) n = +dig[1];
     else {
-      for (const [w, v] of Object.entries(english ? ORD_EN : ORD_CS)) {
+      for (const [w, v] of Object.entries(sourceEnglish ? ORD_EN : ORD_CS)) {
         if (new RegExp('(^|[^\\p{L}])' + w + '($|[^\\p{L}])', 'u').test(lower)) { n = v; break; }
       }
     }
-    const quals = QUALIFIERS.filter(([re]) => re.test(lower)).map(([, a]) => a);
+    const quals = [...new Set(QUALIFIERS.filter(([re]) => re.test(lower)).map((q) => (english ? q[2] : q[1])))];
 
     if (n == null) {
-      // Neznámý tvar – ponecháme slova, jen zkrátíme „vydání“.
+      if (english && !sourceEnglish) return quals.length ? quals.join(' ') + ' ed.' : s;
       return s.replace(/vydání/gi, 'vyd.');
     }
-    if (english) {
-      if (n === 1 && !quals.length) return '';
-      return `${n}${enSuffix(n)}${/rev/i.test(lower) ? ' rev.' : ''} ed.`;
-    }
     if (n === 1 && !quals.length) return '';
+    if (english) return `${n}${enSuffix(n)} ${quals.length ? quals.join(' ') + ' ' : ''}ed.`;
     return quals.length ? `${n}., ${quals.join(' ')} vyd.` : `${n}. vyd.`;
   }
 
@@ -251,7 +265,7 @@
       source: '', sourceId: '', link: '', cover: '',
       authors: [], creatorRole: 'aut', corporate: '', translators: [],
       title: '', subtitle: '', edition: '', series: '',
-      place: '', placeGuessed: false, publisher: '', year: '', isbn: '', isbns: [],
+      editionRaw: '', place: '', placeGuessed: false, publisher: '', year: '', isbn: '', isbns: [],
     };
   }
 
@@ -294,6 +308,7 @@
     if (!r.authors.length && corp.length) r.corporate = clean(corp[0]);
 
     Object.assign(r, splitTitle(rec.shortTitle || rec.title, rec.subTitle));
+    r.editionRaw = clean(rec.edition);
     r.edition = normalizeEdition(rec.edition);
     r.series = clean([].concat(rec.series || []).map((s) => (typeof s === 'string' ? s : s && s.name) || '')[0]);
     r.place = cleanPlace([].concat(rec.placesOfPublication || [])[0]);
@@ -329,7 +344,8 @@
     const ed = (doc.editions && doc.editions.docs && doc.editions.docs[0]) || null;
     const src = ed || doc;
     Object.assign(r, splitTitle(src.title || doc.title, src.subtitle || doc.subtitle));
-    r.edition = normalizeEdition(ed && ed.edition_name);
+    r.editionRaw = clean(ed && ed.edition_name);
+    r.edition = normalizeEdition(r.editionRaw);
     r.place = cleanPlace((src.publish_place || [])[0]);
     r.publisher = cleanPublisher((src.publisher || [])[0]);
     r.year = cleanYear(ed ? (ed.publish_date || [])[0] : doc.first_publish_year);
@@ -367,6 +383,8 @@
   // Vrací { text, html, warnings }
   function buildCitation(d, opts) {
     opts = opts || {};
+    const lang = opts.lang === 'en' ? 'en' : 'cs';
+    const W = WORDS[lang];
     const parts = []; // {text, html, noDot}
     const add = (text, html, noDot) => { if (text) parts.push({ text, html: html == null ? esc(text) : html, noDot }); };
     const warnings = [];
@@ -374,7 +392,7 @@
     // Tvůrce
     const persons = (d.authors || []).filter((p) => clean(p.family));
     if (persons.length) {
-      let c = formatPersons(persons);
+      let c = formatPersons(persons, lang);
       if (d.creatorRole === 'edt') c += persons.length > 1 ? ' (eds.)' : ' (ed.)';
       add(c);
     } else if (clean(d.corporate)) {
@@ -384,7 +402,7 @@
     // Název
     const title = clean(d.title);
     const sub = clean(d.subtitle);
-    if (!title) warnings.push('Chybí název.');
+    if (!title) warnings.push(W.noTitle);
     const full = sub ? `${title}: ${sub}` : title;
     if (full) {
       const medium = d.online ? ' [online]' : '';
@@ -396,7 +414,7 @@
 
     // Překladatel
     const tr = (d.translators || []).filter((p) => clean(p.family)).map(personNatural);
-    if (tr.length) add('Překlad ' + (tr.length > 1 ? tr.slice(0, -1).join(', ') + ' a ' + tr[tr.length - 1] : tr[0]));
+    if (tr.length) add(W.translated + ' ' + (tr.length > 1 ? tr.slice(0, -1).join(', ') + ` ${W.and} ` + tr[tr.length - 1] : tr[0]));
 
     // Edice
     add(clean(d.series));
@@ -409,24 +427,24 @@
     if (place && pub) imprint = `${place}: ${pub}`;
     else imprint = place || pub;
     if (year) imprint = imprint ? `${imprint}, ${year}` : year;
-    if (d.online && d.cited) imprint += ` [cit. ${d.cited}]`;
+    if (d.online && d.cited) imprint += ` [${W.cited} ${d.cited}]`;
     add(imprint);
-    if (!pub) warnings.push('Chybí nakladatel.');
-    if (!place) warnings.push('Chybí místo vydání.');
-    if (!year) warnings.push('Chybí rok vydání.');
+    if (!pub) warnings.push(W.noPublisher);
+    if (!place) warnings.push(W.noPlace);
+    if (!year) warnings.push(W.noYear);
 
     // ISBN
     const isbn = String(d.isbn || '').trim().replace(/^isbn[:\s]*/i, '');
     if (isbn) {
       add('ISBN ' + isbn);
-      if (!isValidIsbn(isbn)) warnings.push('ISBN nemá platný kontrolní součet – zkontroluj ho.');
+      if (!isValidIsbn(isbn)) warnings.push(W.badIsbn);
     }
 
     // Dostupnost
     if (d.online) {
       const url = String(d.url || '').trim();
-      if (url) add('Dostupné z: ' + url, 'Dostupné z: ' + esc(url), true);
-      else warnings.push('U online knihy chybí adresa (URL).');
+      if (url) add(`${W.available}: ${url}`, `${W.available}: ${esc(url)}`, true);
+      else warnings.push(W.noUrl);
     }
 
     let text = '';

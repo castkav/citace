@@ -9,6 +9,11 @@ test('vydání', () => {
   assert.equal(C.normalizeEdition('Druhé vydání'), '2. vyd.');
   assert.equal(C.normalizeEdition('Vydání 25., v Albatrosu 4.'), '25. vyd.');
   assert.equal(C.normalizeEdition('3., přepracované a rozšířené vydání'), '3., přeprac. rozš. vyd.');
+  assert.equal(C.normalizeEdition('Druhé vydání', 'en'), '2nd ed.');
+  assert.equal(C.normalizeEdition('3., přepracované a rozšířené vydání', 'en'), '3rd rev. enl. ed.');
+  assert.equal(C.normalizeEdition('2nd ed.', 'en'), '2nd ed.');
+  assert.equal(C.normalizeEdition('Vydání první', 'en'), '');
+  assert.equal(C.normalizeEdition('11. vydání', 'en'), '11th ed.');
   assert.equal(C.normalizeEdition('2nd edition'), '2nd ed.');
   assert.equal(C.normalizeEdition('Second edition'), '2nd ed.');
   assert.equal(C.normalizeEdition('First edition'), '');
@@ -79,4 +84,16 @@ test('porovnání polí', () => {
   assert.equal(C.compareField('year', '2018', '2019'), 'diff');
   assert.equal(C.compareField('isbn', ['0-306-40615-2'], ['9780306406157']), 'same');
   assert.equal(C.compareField('title', 'Babička', 'Babicka'), 'same');
+});
+
+test('anglická ISO 690', () => {
+  const c = C.buildCitation({
+    authors: [{ family: 'Němcová', given: 'Božena' }, { family: 'Novák', given: 'Jan' }],
+    title: 'Babička', subtitle: 'obrazy venkovského života', edition: '2nd ed.',
+    translators: [{ family: 'Smith', given: 'John' }],
+    place: 'Praha', publisher: 'Albatros', year: '2018', isbn: '978-0-306-40615-7',
+    online: true, cited: '2026-10-04', url: 'https://example.org',
+  }, { lang: 'en' });
+  assert.equal(c.text, 'NĚMCOVÁ, Božena and NOVÁK, Jan. Babička: obrazy venkovského života [online]. 2nd ed. Translated by John Smith. Praha: Albatros, 2018 [viewed 2026-10-04]. ISBN 978-0-306-40615-7. Available from: https://example.org');
+  assert.deepEqual(C.buildCitation({ title: 'X' }, { lang: 'en' }).warnings[0], 'Publisher is missing.');
 });

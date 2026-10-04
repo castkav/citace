@@ -51,6 +51,13 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(-
 }
 h1 { margin: 0; font-size: 26px; line-height: 1.15; font-weight: 700; letter-spacing: -.02em; }
 .intro { margin: 4px 0 0; color: var(--muted); max-width: 66ch; }
+.top { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+.lang { display: inline-flex; flex: none; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.lang button { border: 0; border-radius: 0; background: transparent; padding: 9px 14px; font-weight: 600; font-size: 14px; color: var(--muted); }
+.lang button + button { border-left: 1px solid var(--line); }
+.lang button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+:root[data-theme="dark"] .lang button[aria-pressed="true"] { color: #0e131a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lang button[aria-pressed="true"] { color: #0e131a; } }
 
 .box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
 .box-head {
@@ -167,74 +174,79 @@ footer a { color: var(--accent); }
 <body>
 <div class="wrap">
   <header>
-    <h1>Citace knih</h1>
-    <p class="intro">Napiš ISBN, název nebo autora, klidně nepřesně. Knihu vyhledám v českých knihovnách (Knihovny.cz), v Open Library a v Google Books, porovnám údaje mezi zdroji a sestavím citaci podle ČSN ISO 690:2022.</p>
+    <div class="top">
+      <h1 data-i18n="h1">Citace knih</h1>
+      <div class="lang" role="group" aria-label="Jazyk citace / Citation language">
+        <button type="button" data-lang="cs" aria-pressed="true">CZ</button><button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+    <p class="intro" data-i18n="intro">Napiš ISBN, název nebo autora, klidně nepřesně. Knihu vyhledám v českých knihovnách (Knihovny.cz), v Open Library a v Google Books, porovnám údaje mezi zdroji a sestavím citaci podle ČSN ISO 690:2022.</p>
   </header>
 
   <section class="box">
     <form class="search" id="searchForm" role="search">
-      <input type="search" id="q" placeholder="např. 978-80-00-05056-6 nebo „nemcova babicka albatros“" autocomplete="off" aria-label="Hledat knihu">
-      <button class="primary" type="submit">Hledat</button>
+      <input type="search" id="q" placeholder="např. 978-80-00-05056-6 nebo „nemcova babicka albatros“" autocomplete="off" aria-label="Hledat knihu" data-i18n-ph="qPh" data-i18n-aria="qAria">
+      <button class="primary" type="submit" data-i18n="search">Hledat</button>
     </form>
     <div class="sources" id="sources">
       <span class="src-state" data-src="knihovny">Knihovny.cz</span>
       <span class="src-state" data-src="openlibrary">Open Library</span>
       <span class="src-state" data-src="google">Google Books</span>
       <span style="flex:1"></span>
-      <button type="button" id="manualBtn">Vyplnit ručně</button>
+      <button type="button" id="manualBtn" data-i18n="manual">Vyplnit ručně</button>
     </div>
   </section>
 
   <section class="box" id="resultsBox" hidden>
-    <div class="box-head"><h2>Nalezené knihy</h2><span class="note" id="resultsNote"></span></div>
+    <div class="box-head"><h2 data-i18n="results">Nalezené knihy</h2><span class="note" id="resultsNote"></span></div>
     <ul class="results" id="results"></ul>
   </section>
 
   <section class="box" id="formBox" hidden>
-    <div class="box-head"><h2>Údaje o knize</h2><span class="note">Vše jde upravit, citace se mění hned.</span></div>
+    <div class="box-head"><h2 data-i18n="formH">Údaje o knize</h2><span class="note" data-i18n="formNote">Vše jde upravit, citace se mění hned.</span></div>
     <div class="box-body">
       <form id="bookForm" class="grid" autocomplete="off" onsubmit="return false">
         <div class="f">
           <div class="row">
-            <span class="lbl">Tvůrci</span>
+            <span class="lbl" data-i18n="creators">Tvůrci</span>
             <select id="creatorRole" style="width:auto">
-              <option value="aut">autoři</option>
-              <option value="edt">editoři (ed.)</option>
+              <option value="aut" data-i18n="roleAut">autoři</option>
+              <option value="edt" data-i18n="roleEdt">editoři (ed.)</option>
             </select>
           </div>
           <div class="persons" id="authors"></div>
-          <div><button type="button" data-add="authors">+ přidat tvůrce</button></div>
+          <div><button type="button" data-add="authors" data-i18n="addCreator">+ přidat tvůrce</button></div>
         </div>
-        <div class="f"><label for="corporate">Korporace jako autor (jen když chybí osoby)</label><input type="text" id="corporate"></div>
-        <div class="f s3"><label for="title">Název</label><input type="text" id="title"></div>
-        <div class="f s3"><label for="subtitle">Podnázev</label><input type="text" id="subtitle"></div>
-        <div class="f s2"><label for="edition">Vydání (1. se neuvádí)</label><input type="text" id="edition" placeholder="např. 2. vyd."></div>
-        <div class="f s2"><label for="series">Edice (nepovinné)</label><input type="text" id="series"></div>
+        <div class="f"><label for="corporate" data-i18n="corporate">Korporace jako autor (jen když chybí osoby)</label><input type="text" id="corporate"></div>
+        <div class="f s3"><label for="title" data-i18n="title">Název</label><input type="text" id="title"></div>
+        <div class="f s3"><label for="subtitle" data-i18n="subtitle">Podnázev</label><input type="text" id="subtitle"></div>
+        <div class="f s2"><label for="edition" data-i18n="edition">Vydání (1. se neuvádí)</label><input type="text" id="edition" placeholder="např. 2. vyd." data-i18n-ph="editionPh"></div>
+        <div class="f s2"><label for="series" data-i18n="series">Edice (nepovinné)</label><input type="text" id="series"></div>
         <div class="f s2"><label for="isbn">ISBN</label><input type="text" id="isbn"></div>
-        <div class="f s2"><label for="place">Místo vydání</label><input type="text" id="place"><span class="hint" id="placeHint" hidden>Odhadnuto podle nakladatele – ověř.</span></div>
-        <div class="f s2"><label for="publisher">Nakladatel</label><input type="text" id="publisher"></div>
-        <div class="f s2"><label for="year">Rok vydání</label><input type="text" id="year" inputmode="numeric"></div>
+        <div class="f s2"><label for="place" data-i18n="place">Místo vydání</label><input type="text" id="place"><span class="hint" id="placeHint" hidden data-i18n="placeHint">Odhadnuto podle nakladatele – ověř.</span></div>
+        <div class="f s2"><label for="publisher" data-i18n="publisher">Nakladatel</label><input type="text" id="publisher"></div>
+        <div class="f s2"><label for="year" data-i18n="year">Rok vydání</label><input type="text" id="year" inputmode="numeric"></div>
         <div class="f">
-          <span class="lbl">Překladatel (nepovinné)</span>
+          <span class="lbl" data-i18n="translator">Překladatel (nepovinné)</span>
           <div class="persons" id="translators"></div>
-          <div><button type="button" data-add="translators">+ přidat překladatele</button></div>
+          <div><button type="button" data-add="translators" data-i18n="addTranslator">+ přidat překladatele</button></div>
         </div>
         <div class="f">
-          <label class="check"><input type="checkbox" id="online"> Elektronická kniha online</label>
+          <label class="check"><input type="checkbox" id="online"> <span data-i18n="online">Elektronická kniha online</span></label>
         </div>
-        <div class="f s3" data-online hidden><label for="url">Dostupné z (URL)</label><input type="url" id="url"></div>
-        <div class="f s3" data-online hidden><label for="cited">Datum citování</label><input type="date" id="cited"></div>
+        <div class="f s3" data-online hidden><label for="url" data-i18n="url">Dostupné z (URL)</label><input type="url" id="url"></div>
+        <div class="f s3" data-online hidden><label for="cited" data-i18n="cited">Datum citování</label><input type="date" id="cited"></div>
       </form>
     </div>
   </section>
 
   <section class="box" id="citeBox" hidden>
     <div class="box-head">
-      <h2>Citace</h2>
+      <h2 data-i18n="citeH">Citace</h2>
       <div class="btns">
-        <button class="primary" type="button" id="copyBtn">Kopírovat</button>
-        <button type="button" id="copyTextBtn">Kopírovat bez formátu</button>
-        <button type="button" id="addBtn">Přidat do seznamu</button>
+        <button class="primary" type="button" id="copyBtn" data-i18n="copy">Kopírovat</button>
+        <button type="button" id="copyTextBtn" data-i18n="copyPlain">Kopírovat bez formátu</button>
+        <button type="button" id="addBtn" data-i18n="addList">Přidat do seznamu</button>
       </div>
     </div>
     <div class="box-body">
@@ -244,20 +256,20 @@ footer a { color: var(--accent); }
   </section>
 
   <section class="box" id="verifyBox" hidden>
-    <div class="box-head"><h2>Ověření v dalších zdrojích</h2><span class="note" id="verifyNote"></span></div>
+    <div class="box-head"><h2 data-i18n="verifyH">Ověření v dalších zdrojích</h2><span class="note" id="verifyNote"></span></div>
     <div class="box-body">
       <div class="verify-sum" id="verifySum"></div>
       <div class="table-wrap"><table id="verifyTable"></table></div>
-      <p class="note">✓ zdroj souhlasí s formulářem, ≠ zdroj uvádí něco jiného (tlačítkem „použít“ hodnotu převezmeš), prázdné = zdroj údaj nemá. Knihovní katalog (Knihovny.cz) bývá u českých knih nejspolehlivější.</p>
+      <p class="note" data-i18n="verifyLegend">✓ zdroj souhlasí s formulářem, ≠ zdroj uvádí něco jiného (tlačítkem „použít“ hodnotu převezmeš), prázdné = zdroj údaj nemá. Knihovní katalog (Knihovny.cz) bývá u českých knih nejspolehlivější.</p>
     </div>
   </section>
 
   <section class="box" id="biblioBox" hidden>
     <div class="box-head">
-      <h2>Můj seznam literatury <span class="note" id="biblioCount"></span></h2>
+      <h2><span data-i18n="biblioH">Můj seznam literatury</span> <span class="note" id="biblioCount"></span></h2>
       <div class="btns">
-        <button type="button" id="copyAllBtn">Kopírovat celý seznam</button>
-        <button type="button" id="clearAllBtn">Vymazat</button>
+        <button type="button" id="copyAllBtn" data-i18n="copyAll">Kopírovat celý seznam</button>
+        <button type="button" id="clearAllBtn" data-i18n="clear">Vymazat</button>
       </div>
     </div>
     <ol class="biblio" id="biblio"></ol>
@@ -265,17 +277,17 @@ footer a { color: var(--accent); }
   </section>
 
   <details>
-    <summary>Nastavení</summary>
+    <summary data-i18n="settings">Nastavení</summary>
     <div class="box" style="margin-top:8px"><div class="box-body grid">
       <div class="f">
-        <label for="gkey">Klíč Google Books API (nepovinné)</label>
+        <label for="gkey" data-i18n="gkey">Klíč Google Books API (nepovinné)</label>
         <input type="password" id="gkey" placeholder="AIza…">
-        <span class="note">Bez klíče funguje Google Books s denním limitem dotazů. Klíč si můžeš zdarma vytvořit v Google Cloud Console a uložit ho sem. Zůstane jen v tomto prohlížeči.</span>
+        <span class="note" data-i18n="gkeyNote">Bez klíče funguje Google Books s denním limitem dotazů. Klíč si můžeš zdarma vytvořit v Google Cloud Console a uložit ho sem. Zůstane jen v tomto prohlížeči.</span>
       </div>
     </div></div>
   </details>
 
-  <footer>Formát: ČSN ISO 690:2022 (kniha). Údaje: <a href="https://www.knihovny.cz" target="_blank" rel="noopener">Knihovny.cz</a>, <a href="https://openlibrary.org" target="_blank" rel="noopener">Open Library</a>, <a href="https://books.google.com" target="_blank" rel="noopener">Google Books</a>. Vše běží v prohlížeči, seznam se ukládá jen v tomto zařízení.</footer>
+  <footer data-i18n-html="footer">Formát: ČSN ISO 690:2022 (kniha). Údaje: <a href="https://www.knihovny.cz" target="_blank" rel="noopener">Knihovny.cz</a>, <a href="https://openlibrary.org" target="_blank" rel="noopener">Open Library</a>, <a href="https://books.google.com" target="_blank" rel="noopener">Google Books</a>. Vše běží v prohlížeči, seznam se ukládá jen v tomto zařízení.</footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -299,6 +311,107 @@ footer a { color: var(--accent); }
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* bez úložiště */ } },
   };
 
+  /* ---------- Jazyk: CZ = ČSN ISO 690:2022, EN = ISO 690 v angličtině ---------- */
+
+  const I18N = {
+    cs: {
+      pageTitle: 'Citace knih',
+      h1: 'Citace knih',
+      intro: 'Napiš ISBN, název nebo autora, klidně nepřesně. Knihu vyhledám v českých knihovnách (Knihovny.cz), v Open Library a v Google Books, porovnám údaje mezi zdroji a sestavím citaci podle ČSN ISO 690:2022.',
+      qPh: 'např. 978-80-00-05056-6 nebo „nemcova babicka albatros“', qAria: 'Hledat knihu',
+      search: 'Hledat', manual: 'Vyplnit ručně', results: 'Nalezené knihy',
+      formH: 'Údaje o knize', formNote: 'Vše jde upravit, citace se mění hned.',
+      creators: 'Tvůrci', roleAut: 'autoři', roleEdt: 'editoři (ed.)', addCreator: '+ přidat tvůrce',
+      corporate: 'Korporace jako autor (jen když chybí osoby)', title: 'Název', subtitle: 'Podnázev',
+      edition: 'Vydání (1. se neuvádí)', editionPh: 'např. 2. vyd.', series: 'Edice (nepovinné)',
+      place: 'Místo vydání', placeHint: 'Odhadnuto podle nakladatele – ověř.', publisher: 'Nakladatel', year: 'Rok vydání',
+      translator: 'Překladatel (nepovinné)', addTranslator: '+ přidat překladatele', online: 'Elektronická kniha online',
+      url: 'Dostupné z (URL)', cited: 'Datum citování',
+      citeH: 'Citace', copy: 'Kopírovat', copyPlain: 'Kopírovat bez formátu', addList: 'Přidat do seznamu',
+      verifyH: 'Ověření v dalších zdrojích',
+      verifyLegend: '✓ zdroj souhlasí s formulářem, ≠ zdroj uvádí něco jiného (tlačítkem „použít“ hodnotu převezmeš), prázdné = zdroj údaj nemá. Knihovní katalog (Knihovny.cz) bývá u českých knih nejspolehlivější.',
+      biblioH: 'Můj seznam literatury', copyAll: 'Kopírovat celý seznam', clear: 'Vymazat',
+      settings: 'Nastavení', gkey: 'Klíč Google Books API (nepovinné)',
+      gkeyNote: 'Bez klíče funguje Google Books s denním limitem dotazů. Klíč si můžeš zdarma vytvořit v Google Cloud Console a uložit ho sem. Zůstane jen v tomto prohlížeči.',
+      footer: 'Formát: ČSN ISO 690:2022 (kniha). Údaje: {sources}. Vše běží v prohlížeči, seznam se ukládá jen v tomto zařízení.',
+      unavailable: 'nedostupné', searching: 'Hledám…',
+      nothing: 'Nic jsem nenašel. Zkus jiná slova nebo ISBN, případně vyplň údaje ručně.',
+      count: (n) => n + (n === 1 ? ' kniha' : n < 5 ? ' knihy' : ' knih'),
+      inSources: (n) => `shoda ve ${n} zdrojích`, approx: 'vydání nejisté', pick: 'Vybrat',
+      family: 'Příjmení', given: 'Jméno', remove: 'Odebrat', fillIn: 'Vyplň údaje o knize.',
+      noIsbn: 'Kniha nemá ISBN, v dalších zdrojích ji nejde spolehlivě dohledat',
+      thField: 'Údaj', thForm: 'Ve formuláři', lookup: 'hledám…', notFound: 'nenalezeno', use: 'použít',
+      byIsbn: (i) => 'podle ISBN ' + i,
+      foundIn: (a, b) => `Kniha nalezena ve ${a} ze ${b} zdrojů`,
+      diffs: (n) => `Rozdílů mezi zdroji: ${n}, zkontroluj zvýrazněná pole`,
+      match: 'Údaje se shodují', verifying: 'Ověřuji…',
+      fAuthors: 'Autoři', fTitle: 'Název', fEdition: 'Vydání', fPlace: 'Místo', fPublisher: 'Nakladatel', fYear: 'Rok', fIsbn: 'ISBN',
+      copied: 'Zkopírováno', copiedPlain: 'Zkopírováno (bez formátu)', added: 'Přidáno do seznamu',
+      confirmClear: 'Opravdu vymazat celý seznam?', del: 'Smazat',
+    },
+    en: {
+      pageTitle: 'Book References',
+      h1: 'Book references',
+      intro: 'Type an ISBN, a title or an author – it does not have to be exact. The book is looked up in Czech libraries (Knihovny.cz), Open Library and Google Books, its details are cross-checked between the sources and the reference is formatted according to ISO 690 in English.',
+      qPh: 'e.g. 978-0-306-40615-7 or "tolkien hobbit allen unwin"', qAria: 'Search for a book',
+      search: 'Search', manual: 'Enter manually', results: 'Results',
+      formH: 'Book details', formNote: 'Everything is editable; the reference updates instantly.',
+      creators: 'Creators', roleAut: 'authors', roleEdt: 'editors (ed.)', addCreator: '+ add creator',
+      corporate: 'Corporate author (only if there are no persons)', title: 'Title', subtitle: 'Subtitle',
+      edition: 'Edition (omit the 1st)', editionPh: 'e.g. 2nd ed.', series: 'Series (optional)',
+      place: 'Place of publication', placeHint: 'Guessed from the publisher – please check.', publisher: 'Publisher', year: 'Year',
+      translator: 'Translator (optional)', addTranslator: '+ add translator', online: 'Online e-book',
+      url: 'Available from (URL)', cited: 'Date viewed',
+      citeH: 'Reference', copy: 'Copy', copyPlain: 'Copy as plain text', addList: 'Add to list',
+      verifyH: 'Cross-check in other sources',
+      verifyLegend: '✓ the source agrees with the form, ≠ the source says something else (click “use” to take its value), empty = the source does not have it. For Czech books the library catalogue (Knihovny.cz) is usually the most reliable.',
+      biblioH: 'My reference list', copyAll: 'Copy whole list', clear: 'Clear',
+      settings: 'Settings', gkey: 'Google Books API key (optional)',
+      gkeyNote: 'Without a key Google Books works with a daily request limit. You can create a free key in the Google Cloud Console and save it here. It stays in this browser only.',
+      footer: 'Format: ISO 690 (book), English. Data: {sources}. Everything runs in your browser; the list is stored on this device only.',
+      unavailable: 'unavailable', searching: 'Searching…',
+      nothing: 'Nothing found. Try other words or the ISBN, or enter the details manually.',
+      count: (n) => n + (n === 1 ? ' book' : ' books'),
+      inSources: (n) => `found in ${n} sources`, approx: 'edition uncertain', pick: 'Select',
+      family: 'Surname', given: 'Given name', remove: 'Remove', fillIn: 'Fill in the book details.',
+      noIsbn: 'The book has no ISBN, so it cannot be reliably matched in other sources',
+      thField: 'Field', thForm: 'In the form', lookup: 'searching…', notFound: 'not found', use: 'use',
+      byIsbn: (i) => 'by ISBN ' + i,
+      foundIn: (a, b) => `Found in ${a} of ${b} sources`,
+      diffs: (n) => `Differences between sources: ${n} – check the highlighted fields`,
+      match: 'Details match', verifying: 'Verifying…',
+      fAuthors: 'Authors', fTitle: 'Title', fEdition: 'Edition', fPlace: 'Place', fPublisher: 'Publisher', fYear: 'Year', fIsbn: 'ISBN',
+      copied: 'Copied', copiedPlain: 'Copied (plain text)', added: 'Added to the list',
+      confirmClear: 'Clear the whole list?', del: 'Delete',
+    },
+  };
+  const SOURCE_LINKS = '<a href="https://www.knihovny.cz" target="_blank" rel="noopener">Knihovny.cz</a>, ' +
+    '<a href="https://openlibrary.org" target="_blank" rel="noopener">Open Library</a>, ' +
+    '<a href="https://books.google.com" target="_blank" rel="noopener">Google Books</a>';
+
+  function initialLang() {
+    const q = new URLSearchParams(location.search).get('lang');
+    if (q === 'en' || q === 'cs') return q;
+    return store.get('citace.lang', 'cs') === 'en' ? 'en' : 'cs';
+  }
+  let lang = initialLang();
+  const t = (k, ...a) => { const v = I18N[lang][k]; return typeof v === 'function' ? v(...a) : v; };
+
+  function applyStaticTexts() {
+    document.documentElement.lang = lang;
+    document.title = t('pageTitle');
+    document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-ph]').forEach((el) => { el.placeholder = t(el.dataset.i18nPh); });
+    document.querySelectorAll('[data-i18n-aria]').forEach((el) => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+    document.querySelectorAll('[data-i18n-html]').forEach((el) => { el.innerHTML = t(el.dataset.i18nHtml).replace('{sources}', SOURCE_LINKS); });
+    document.querySelectorAll('.lang [data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    document.querySelectorAll('.person').forEach((row) => {
+      row.querySelector('[data-k="family"]').placeholder = t('family');
+      row.querySelector('[data-k="given"]').placeholder = t('given');
+      row.querySelector('[data-remove]').setAttribute('aria-label', t('remove'));
+    });
+  }
+
   /* ---------- Volání zdrojů ---------- */
 
   async function getJson(url, signal) {
@@ -308,7 +421,7 @@ footer a { color: var(--accent); }
   }
 
   async function searchKnihovny(q, signal) {
-    const p = new URLSearchParams({ lookfor: q, type: 'AllFields', limit: '20', lng: 'cs' });
+    const p = new URLSearchParams({ lookfor: q, type: 'AllFields', limit: '20', lng: lang });
     FIELDS_KNIHOVNY.forEach((f) => p.append('field[]', f));
     const j = await getJson('https://www.knihovny.cz/api/v1/search?' + p, signal);
     return (j.records || []).map(C.fromKnihovny);
@@ -347,11 +460,13 @@ footer a { color: var(--accent); }
   let lastResults = {}; // src → záznamy
   let groups = [];
 
+  const srcState = {};
   function setSrcState(src, state, title) {
+    srcState[src] = [state, title];
     const el = document.querySelector(`.src-state[data-src="${src}"]`);
     el.className = 'src-state ' + state;
     el.title = title || '';
-    el.textContent = SOURCES[src] + (state === 'ok' ? ` (${title})` : state === 'err' ? ' – nedostupné' : '');
+    el.textContent = SOURCES[src] + (state === 'ok' ? ` (${title})` : state === 'err' ? ' – ' + t('unavailable') : '');
   }
 
   function groupKey(r) {
@@ -370,11 +485,11 @@ footer a { color: var(--accent); }
       }
     }
     groups = [...map.values()];
-    // české knihovny první, pak podle počtu zdrojů, které knihu znají
+    // CZ: české knihovny první, pak podle počtu zdrojů; EN: nejdřív knihy známé ve více zdrojích
     groups.forEach((g, i) => { g.order = i; });
-    groups.sort((a, b) =>
-      PRIORITY.indexOf(a.records[0].source) - PRIORITY.indexOf(b.records[0].source) ||
-      b.records.length - a.records.length || a.order - b.order);
+    const bySource = (a, b) => PRIORITY.indexOf(a.records[0].source) - PRIORITY.indexOf(b.records[0].source);
+    const byCount = (a, b) => b.records.length - a.records.length;
+    groups.sort((a, b) => (lang === 'en' ? byCount(a, b) || bySource(a, b) : bySource(a, b) || byCount(a, b)) || a.order - b.order);
   }
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
@@ -384,19 +499,19 @@ footer a { color: var(--accent); }
     $('resultsBox').hidden = false;
     if (!groups.length) {
       const pending = document.querySelectorAll('.src-state.loading').length;
-      ul.innerHTML = `<li class="empty">${pending ? 'Hledám…' : 'Nic jsem nenašel. Zkus jiná slova nebo ISBN, případně vyplň údaje ručně.'}</li>`;
+      ul.innerHTML = `<li class="empty">${pending ? t('searching') : t('nothing')}</li>`;
       $('resultsNote').textContent = '';
       return;
     }
-    $('resultsNote').textContent = groups.length + (groups.length === 1 ? ' kniha' : groups.length < 5 ? ' knihy' : ' knih');
+    $('resultsNote').textContent = t('count', groups.length);
     ul.innerHTML = groups.slice(0, 40).map((g, i) => {
       const r = g.records[0];
       const authors = r.authors.map(C.personNatural).join(', ') || r.corporate;
       const imprint = [r.place && r.publisher ? `${r.place}: ${r.publisher}` : r.place || r.publisher, r.year].filter(Boolean).join(', ');
-      const meta = [authors, imprint, r.edition, r.isbn && 'ISBN ' + r.isbn].filter(Boolean).map(esc).join(' · ');
+      const meta = [authors, imprint, C.normalizeEdition(r.editionRaw || r.edition, lang), r.isbn && 'ISBN ' + r.isbn].filter(Boolean).map(esc).join(' · ');
       const tags = g.records.map((x) => `<span class="tag">${SOURCES[x.source]}</span>`).join('') +
-        (g.records.length > 1 ? `<span class="tag multi">shoda ve ${g.records.length} zdrojích</span>` : '') +
-        (r.approximate ? '<span class="tag approx">vydání nejisté</span>' : '');
+        (g.records.length > 1 ? `<span class="tag multi">${t('inSources', g.records.length)}</span>` : '') +
+        (r.approximate ? `<span class="tag approx">${t('approx')}</span>` : '');
       const cover = g.records.map((x) => x.cover).find(Boolean);
       return `<li class="result">
         <div class="cover">${cover ? `<img src="${esc(cover)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</div>
@@ -405,7 +520,7 @@ footer a { color: var(--accent); }
           <div class="r-meta">${meta}</div>
           <div class="tags">${tags}</div>
         </div>
-        <div class="btns"><button type="button" class="primary" data-pick="${i}">Vybrat</button></div>
+        <div class="btns"><button type="button" class="primary" data-pick="${i}">${t('pick')}</button></div>
       </li>`;
     }).join('');
   }
@@ -447,9 +562,9 @@ footer a { color: var(--accent); }
   function personRow(p, listId) {
     const div = document.createElement('div');
     div.className = 'person';
-    div.innerHTML = `<input type="text" data-k="family" placeholder="Příjmení" aria-label="Příjmení">
-      <input type="text" data-k="given" placeholder="Jméno" aria-label="Jméno">
-      <button type="button" data-remove aria-label="Odebrat">✕</button>`;
+    div.innerHTML = `<input type="text" data-k="family" placeholder="${t('family')}" aria-label="${t('family')}">
+      <input type="text" data-k="given" placeholder="${t('given')}" aria-label="${t('given')}">
+      <button type="button" data-remove aria-label="${t('remove')}">✕</button>`;
     div.querySelector('[data-k="family"]').value = p.family || '';
     div.querySelector('[data-k="given"]').value = p.given || '';
     $(listId).appendChild(div);
@@ -473,11 +588,17 @@ footer a { color: var(--accent); }
     return d;
   }
 
+  // Vydání se píše podle jazyka (2. vyd. / 2nd ed.); dokud ho uživatel nepřepíše, při přepnutí jazyka se přeloží.
+  let editionRaw = '';
+  let editionAuto = '';
+
   function fillForm(r) {
     setPersons('authors', r.authors || []);
     setPersons('translators', r.translators || []);
     $('creatorRole').value = r.creatorRole || 'aut';
     TEXT_FIELDS.forEach((f) => { if (f !== 'url' && f !== 'cited') $(f).value = r[f] || ''; });
+    editionRaw = r.editionRaw || r.edition || '';
+    editionAuto = $('edition').value = C.normalizeEdition(editionRaw, lang);
     $('placeHint').hidden = !r.placeGuessed;
     $('formBox').hidden = false;
     $('citeBox').hidden = false;
@@ -488,8 +609,8 @@ footer a { color: var(--accent); }
     const online = $('online').checked;
     document.querySelectorAll('[data-online]').forEach((el) => { el.hidden = !online; });
     if (online && !$('cited').value) $('cited').value = new Date().toISOString().slice(0, 10);
-    const c = C.buildCitation(readForm());
-    $('cite').innerHTML = c.html || '<span class="note">Vyplň údaje o knize.</span>';
+    const c = C.buildCitation(readForm(), { lang });
+    $('cite').innerHTML = c.html || `<span class="note">${t('fillIn')}</span>`;
     $('warnings').innerHTML = c.warnings.map((w) => `<li>${esc(w)}</li>`).join('');
     current = c;
     renderVerify();
@@ -534,14 +655,15 @@ footer a { color: var(--accent); }
     }));
   }
 
+  const sourceEdition = (r) => C.normalizeEdition(r.editionRaw || r.edition, lang);
   const VERIFY_FIELDS = [
-    ['authors', 'Autoři', (r) => r.authors, (v) => (v || []).map(C.personNatural).join(', ')],
-    ['title', 'Název', (r) => r.title, (v) => v],
-    ['edition', 'Vydání', (r) => r.edition, (v) => v],
-    ['place', 'Místo', (r) => (r.placeGuessed ? '' : r.place), (v) => v],
-    ['publisher', 'Nakladatel', (r) => r.publisher, (v) => v],
-    ['year', 'Rok', (r) => r.year, (v) => v],
-    ['isbn', 'ISBN', (r) => r.isbns, (v) => [].concat(v || []).join(', ')],
+    ['authors', 'fAuthors', (r) => r.authors, (v) => (v || []).map(C.personNatural).join(', ')],
+    ['title', 'fTitle', (r) => r.title, (v) => v],
+    ['edition', 'fEdition', sourceEdition, (v) => v],
+    ['place', 'fPlace', (r) => (r.placeGuessed ? '' : r.place), (v) => v],
+    ['publisher', 'fPublisher', (r) => r.publisher, (v) => v],
+    ['year', 'fYear', (r) => r.year, (v) => v],
+    ['isbn', 'fIsbn', (r) => r.isbns, (v) => [].concat(v || []).join(', ')],
   ];
 
   function renderVerify() {
@@ -550,7 +672,7 @@ footer a { color: var(--accent); }
     const table = $('verifyTable');
     if (!verify.isbn) {
       $('verifyNote').textContent = '';
-      box.innerHTML = '<span class="pill warn">Kniha nemá ISBN, v dalších zdrojích ji nejde spolehlivě dohledat</span>';
+      box.innerHTML = `<span class="pill warn">${t('noIsbn')}</span>`;
       table.innerHTML = '';
       return;
     }
@@ -559,10 +681,10 @@ footer a { color: var(--accent); }
     const srcs = PRIORITY;
     let found = 0;
     let diffs = 0;
-    let head = '<thead><tr><th>Údaj</th><th>Ve formuláři</th>';
+    let head = `<thead><tr><th>${t('thField')}</th><th>${t('thForm')}</th>`;
     srcs.forEach((s) => {
       const st = verify.bySrc[s];
-      const label = st === 'loading' ? 'hledám…' : st === 'err' ? 'nedostupné' : st ? '' : 'nenalezeno';
+      const label = st === 'loading' ? t('lookup') : st === 'err' ? t('unavailable') : st ? '' : t('notFound');
       if (st && typeof st === 'object') found++;
       head += `<th>${SOURCES[s]}${label ? ` <span class="note">(${label})</span>` : ''}</th>`;
     });
@@ -570,7 +692,7 @@ footer a { color: var(--accent); }
     let body = '<tbody>';
     for (const [f, label, get, show] of VERIFY_FIELDS) {
       const fv = formVals[f];
-      body += `<tr><td class="field">${label}</td><td><span class="v">${esc(show(fv)) || '<span class="note">–</span>'}</span></td>`;
+      body += `<tr><td class="field">${t(label)}</td><td><span class="v">${esc(show(fv)) || '<span class="note">–</span>'}</span></td>`;
       for (const s of srcs) {
         const r = verify.bySrc[s];
         if (!r || typeof r !== 'object') { body += '<td class="none"></td>'; continue; }
@@ -579,22 +701,22 @@ footer a { color: var(--accent); }
         let cmp = C.compareField(f, fv, sv);
         if (f === 'edition') {
           // zdroj bez údaje o vydání (Google Books ho nemá) nic nevyvrací; prázdné pole ve formuláři = 1. vydání
-          cmp = !sv ? 'none' : C.compareField(f, fv || '1. vyd.', sv);
+          cmp = !sv ? 'none' : C.compareField(f, fv || (lang === 'en' ? '1st ed.' : '1. vyd.'), sv);
         }
         if (cmp === 'diff' && f !== 'isbn') diffs++;
         const canUse = cmp === 'diff' && f !== 'isbn' && shown;
-        body += `<td class="${shown ? cmp : 'none'}"><span class="v">${esc(shown)}</span>${canUse ? `<br><button type="button" data-use="${f}" data-src="${s}">použít</button>` : ''}</td>`;
+        body += `<td class="${shown ? cmp : 'none'}"><span class="v">${esc(shown)}</span>${canUse ? `<br><button type="button" data-use="${f}" data-src="${s}">${t('use')}</button>` : ''}</td>`;
       }
       body += '</tr>';
     }
     body += '</tbody>';
     table.innerHTML = head + body;
     const pending = srcs.some((s) => verify.bySrc[s] === 'loading');
-    $('verifyNote').textContent = 'podle ISBN ' + verify.isbn;
+    $('verifyNote').textContent = t('byIsbn', verify.isbn);
     const pills = [];
-    pills.push(`<span class="pill ${found >= 2 ? 'ok' : 'warn'}">Kniha nalezena ve ${found} ze ${srcs.length} zdrojů</span>`);
-    if (!pending) pills.push(diffs ? `<span class="pill warn">Rozdílů mezi zdroji: ${diffs}, zkontroluj zvýrazněná pole</span>` : found >= 2 ? '<span class="pill ok">Údaje se shodují</span>' : '');
-    else pills.push('<span class="note">Ověřuji…</span>');
+    pills.push(`<span class="pill ${found >= 2 ? 'ok' : 'warn'}">${t('foundIn', found, srcs.length)}</span>`);
+    if (!pending) pills.push(diffs ? `<span class="pill warn">${t('diffs', diffs)}</span>` : found >= 2 ? `<span class="pill ok">${t('match')}</span>` : '');
+    else pills.push(`<span class="note">${t('verifying')}</span>`);
     box.innerHTML = pills.join('');
   }
 
@@ -602,7 +724,10 @@ footer a { color: var(--accent); }
     const r = verify && verify.bySrc[src];
     if (!r || typeof r !== 'object') return;
     if (field === 'authors') setPersons('authors', r.authors);
-    else {
+    else if (field === 'edition') {
+      editionRaw = r.editionRaw || r.edition || '';
+      editionAuto = $('edition').value = sourceEdition(r);
+    } else {
       $(field).value = r[field] || '';
       if (field === 'place') $('placeHint').hidden = true;
     }
@@ -612,11 +737,11 @@ footer a { color: var(--accent); }
   /* ---------- Kopírování a seznam ---------- */
 
   function toast(msg) {
-    const t = $('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(toast.t);
-    toast.t = setTimeout(() => t.classList.remove('show'), 1800);
+    const el = $('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => el.classList.remove('show'), 1800);
   }
 
   async function copy(html, text, plainOnly) {
@@ -629,7 +754,7 @@ footer a { color: var(--accent); }
       } else {
         await navigator.clipboard.writeText(text);
       }
-      toast('Zkopírováno');
+      toast(t('copied'));
     } catch (e) {
       const ta = document.createElement('textarea');
       ta.value = text;
@@ -637,18 +762,20 @@ footer a { color: var(--accent); }
       ta.select();
       document.execCommand('copy');
       ta.remove();
-      toast('Zkopírováno (bez formátu)');
+      toast(t('copiedPlain'));
     }
   }
 
-  let biblio = store.get('citace.seznam', []);
+  // každý jazyk má vlastní seznam
+  const biblioKey = () => (lang === 'en' ? 'citace.seznam.en' : 'citace.seznam');
+  let biblio = store.get(biblioKey(), []);
 
   function renderBiblio() {
-    biblio.sort((a, b) => a.text.localeCompare(b.text, 'cs'));
+    biblio.sort((a, b) => a.text.localeCompare(b.text, lang));
     $('biblioBox').hidden = !biblio.length;
     $('biblioCount').textContent = biblio.length ? `(${biblio.length})` : '';
     $('biblio').innerHTML = biblio.map((b, i) => `<li><span>${b.html}</span><span class="btns">
-      <button type="button" data-copy-item="${i}">Kopírovat</button><button type="button" data-del="${i}" aria-label="Smazat">✕</button></span></li>`).join('');
+      <button type="button" data-copy-item="${i}">${t('copy')}</button><button type="button" data-del="${i}" aria-label="${t('del')}">✕</button></span></li>`).join('');
   }
 
   /* ---------- Události ---------- */
@@ -683,28 +810,53 @@ footer a { color: var(--accent); }
   $('addBtn').addEventListener('click', () => {
     if (!current || !current.text) return;
     if (!biblio.some((b) => b.text === current.text)) biblio.push({ html: current.html, text: current.text });
-    store.set('citace.seznam', biblio);
+    store.set(biblioKey(), biblio);
     renderBiblio();
-    toast('Přidáno do seznamu');
+    toast(t('added'));
   });
   $('biblio').addEventListener('click', (e) => {
     const c = e.target.closest('[data-copy-item]');
     if (c) { const b = biblio[+c.dataset.copyItem]; copy(b.html, b.text); return; }
     const d = e.target.closest('[data-del]');
-    if (d) { biblio.splice(+d.dataset.del, 1); store.set('citace.seznam', biblio); renderBiblio(); }
+    if (d) { biblio.splice(+d.dataset.del, 1); store.set(biblioKey(), biblio); renderBiblio(); }
   });
   $('copyAllBtn').addEventListener('click', () => {
     copy(biblio.map((b) => `<p>${b.html}</p>`).join(''), biblio.map((b) => b.text).join('\n'));
   });
   $('clearAllBtn').addEventListener('click', () => {
-    if (!confirm('Opravdu vymazat celý seznam?')) return;
+    if (!confirm(t('confirmClear'))) return;
     biblio = [];
-    store.set('citace.seznam', biblio);
+    store.set(biblioKey(), biblio);
     renderBiblio();
   });
   $('gkey').value = store.get('citace.gkey', '');
   $('gkey').addEventListener('change', () => store.set('citace.gkey', $('gkey').value.trim()));
 
+  $('edition').addEventListener('input', () => { editionAuto = null; });
+
+  function setLang(next) {
+    if (next === lang) return;
+    lang = next;
+    store.set('citace.lang', lang);
+    const url = new URL(location.href);
+    if (lang === 'en') url.searchParams.set('lang', 'en'); else url.searchParams.delete('lang');
+    history.replaceState(null, '', url);
+    applyStaticTexts();
+    PRIORITY.forEach((s) => { if (srcState[s]) setSrcState(s, ...srcState[s]); });
+    if (!$('formBox').hidden) {
+      // automaticky vyplněné vydání přeložíme, ručně psané jen převedeme do zkratek
+      const raw = editionAuto === $('edition').value ? editionRaw : $('edition').value;
+      editionAuto = $('edition').value = C.normalizeEdition(raw, lang);
+      editionRaw = raw;
+    }
+    if (!$('resultsBox').hidden) { regroup(); renderResults(); }
+    biblio = store.get(biblioKey(), []);
+    renderBiblio();
+    if (!$('citeBox').hidden) update();
+  }
+  document.querySelectorAll('.lang [data-lang]').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+  applyStaticTexts();
   renderBiblio();
 })();
 </script>

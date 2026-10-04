@@ -2,6 +2,15 @@
 
 Citátor knih podle **ČSN ISO 690:2022**. Napíšeš ISBN, název nebo autora (klidně nepřesně), aplikace knihu najde a sestaví citaci, kterou zkopíruješ i s kurzívou rovnou do Wordu.
 
+## CZ / EN
+
+Přepínač nahoře mění jazyk citace i celé stránky:
+
+- **CZ**: ČSN ISO 690:2022, tedy `2. vyd.`, `Překlad`, `[cit. …]`, `Dostupné z:`
+- **EN**: ISO 690 v angličtině pro zahraniční studenty, tedy `2nd ed.`, `Translated by`, `[viewed …]`, `Available from:`
+
+Údaje o knize (název, nakladatel, místo) zůstávají v obou případech v jazyce originálu. Mění se jen pomocná slova. Anglická verze se otevře rovnou odkazem `https://castkav.github.io/citace/?lang=en`. Každý jazyk má vlastní seznam literatury.
+
 ## Odkud bere údaje
 
 Všechny zdroje jsou zdarma a bez registrace:
